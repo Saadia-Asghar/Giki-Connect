@@ -4,7 +4,7 @@ cd /d "%~dp0"
 
 echo.
 echo  ============================================================
-echo   GIKI-Connect - starting the app for your presentation
+echo   GIKI-Connect - starting the web app
 echo  ============================================================
 echo.
 
@@ -35,7 +35,7 @@ if not exist "output\model\kmeans.pkl" (
 
 echo.
 echo Starting server... Your browser should open automatically in ~2 seconds.
-echo *** Leave this black window OPEN during class — closing it stops the app ***
+echo *** Leave this window OPEN while using the app — closing it stops the server ***
 echo.
 %PY% app_server.py
 echo.

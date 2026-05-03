@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GIKI-Connect — Find your interest tribe</title>
+  <title>GIKI-Connect — Interest tribes & campus mixers</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
@@ -11,58 +11,111 @@
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div class="badge">K-Means · real survey + notebook pipeline</div>
-      <h1>GIKI-Connect</h1>
-      <p>Pick your hobbies and social sliders — we map you to one of four <strong>interest tribes</strong> using the same model as the course notebook.</p>
+    <header class="top">
+      <div>
+        <div class="badge">K-Means · notebook-trained model</div>
+        <h1>GIKI-Connect</h1>
+        <p class="lede">Students get an <strong>interest tribe</strong> from the saved model, then see <strong>events to attend</strong> and <strong>people to meet</strong> from your profile. Admins post campus mixers.</p>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="student" role="tab" aria-selected="true">Student</button>
+        <button type="button" class="tab" data-tab="admin" role="tab" aria-selected="false">GIKI admin</button>
+      </nav>
     </header>
 
-    <section class="card" aria-labelledby="hobbies-heading">
-      <h2 id="hobbies-heading">Hobbies</h2>
-      <p style="margin:0 0 1rem;font-size:0.9rem;color:var(--muted);">Select all that apply (at least one).</p>
-      <div class="hobby-grid" id="hobby-grid"></div>
-    </section>
+    <div id="panel-student" class="panel">
+      <section class="card">
+        <h2>Your hobbies</h2>
+        <p class="hint">Select all that apply (at least one).</p>
+        <div class="hobby-grid" id="hobby-grid"></div>
+      </section>
 
-    <section class="card" aria-labelledby="social-heading">
-      <h2 id="social-heading">Social context</h2>
-      <div class="field">
-        <label>Society hours / week <strong id="soc_hours_v">0 h/wk</strong></label>
-        <input type="range" id="soc_hours" min="0" max="10" step="0.5" value="0" />
-      </div>
-      <div class="field">
-        <label>Comfort talking to new people (1–5) <strong id="comfort_v">4</strong></label>
-        <input type="range" id="comfort" min="1" max="5" step="1" value="4" />
-      </div>
-      <div class="field">
-        <label>Close friends from <em>same province</em> (%) <strong id="same_prov_pct_v">50%</strong></label>
-        <input type="range" id="same_prov_pct" min="0" max="100" step="5" value="50" />
-      </div>
-      <div class="field">
-        <label>Close friends from <em>same faculty</em> (%) <strong id="same_fac_pct_v">50%</strong></label>
-        <input type="range" id="same_fac_pct" min="0" max="100" step="5" value="50" />
-      </div>
-      <button type="button" class="primary" id="submit">Find my tribe</button>
-      <p class="error" id="error" role="alert"></p>
-    </section>
+      <section class="card">
+        <h2>Social context</h2>
+        <div class="field">
+          <label>Society hours / week <strong id="soc_hours_v">0 h/wk</strong></label>
+          <input type="range" id="soc_hours" min="0" max="10" step="0.5" value="0" />
+        </div>
+        <div class="field">
+          <label>Comfort talking to new people (1–5) <strong id="comfort_v">4</strong></label>
+          <input type="range" id="comfort" min="1" max="5" step="1" value="4" />
+        </div>
+        <div class="field">
+          <label>Close friends from <em>same province</em> (%) <strong id="same_prov_pct_v">50%</strong></label>
+          <input type="range" id="same_prov_pct" min="0" max="100" step="5" value="50" />
+        </div>
+        <div class="field">
+          <label>Close friends from <em>same faculty</em> (%) <strong id="same_fac_pct_v">50%</strong></label>
+          <input type="range" id="same_fac_pct" min="0" max="100" step="5" value="50" />
+        </div>
+        <button type="button" class="primary" id="submit">Get tribe &amp; suggestions</button>
+        <p class="error" id="error" role="alert"></p>
+      </section>
 
-    <section class="card" id="result" aria-live="polite">
-      <h2>Your match</h2>
-      <p class="result-tribe" id="tribe-title"></p>
-      <p class="result-meta" id="tribe-meta"></p>
-      <div class="silo-row">
-        <span>Friendship concentration (Silo index)</span>
-        <span id="silo-label"></span>
-      </div>
-      <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
-      <p style="margin:0.75rem 0 0;font-size:0.85rem;color:var(--muted);">Common hobbies in this tribe:</p>
-      <div class="pill-list" id="tribe-hobbies"></div>
-      <div class="rec" id="rec"></div>
-    </section>
+      <section class="card hidden" id="result" aria-live="polite">
+        <h2>Your tribe (from trained model)</h2>
+        <p class="result-tribe" id="tribe-title"></p>
+        <p class="result-meta" id="tribe-meta"></p>
+        <p class="model-note" id="model-note"></p>
+        <div class="silo-row">
+          <span>Friendship concentration (Silo index)</span>
+          <span id="silo-label"></span>
+        </div>
+        <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
+        <p class="hint" style="margin-top:0.75rem">Common hobbies in this tribe:</p>
+        <div class="pill-list" id="tribe-hobbies"></div>
+        <div class="rec" id="rec"></div>
+
+        <h3 class="subhead">Events to attend</h3>
+        <p class="hint">Posted by admin — ranked by hobby match + your tribe.</p>
+        <div id="event-list" class="event-list"></div>
+
+        <h3 class="subhead">People to meet</h3>
+        <p class="hint">Others in the same K-Means cluster; hobby overlap shown (anonymized IDs).</p>
+        <div id="peer-list" class="peer-list"></div>
+      </section>
+    </div>
+
+    <div id="panel-admin" class="panel hidden">
+      <section class="card">
+        <h2>Post a campus event</h2>
+        <p class="hint">Uses admin token (demo default: <code>giki-admin-demo</code> — set env <code>GIKI_ADMIN_TOKEN</code> to change).</p>
+        <div class="field">
+          <label>Admin token</label>
+          <input type="password" id="admin-token" class="text-input" value="giki-admin-demo" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Event title</label>
+          <input type="text" id="ev-title" class="text-input" placeholder="e.g. Open mic night" />
+        </div>
+        <div class="field">
+          <label>Date &amp; time</label>
+          <input type="datetime-local" id="ev-when" class="text-input" />
+        </div>
+        <div class="field">
+          <label>Place</label>
+          <input type="text" id="ev-place" class="text-input" placeholder="Venue" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="ev-desc" class="text-input tall" rows="3" placeholder="What to expect…"></textarea>
+        </div>
+        <p class="hint">Hobbies this event fits (for matching students):</p>
+        <div class="hobby-grid" id="admin-hobby-grid"></div>
+        <p class="hint" style="margin-top:1rem">Target tribes (optional — leave empty to match hobbies only):</p>
+        <div class="cluster-picks" id="cluster-picks"></div>
+        <button type="button" class="primary" id="admin-submit">Publish event</button>
+        <p class="error" id="admin-error" role="alert"></p>
+        <p class="ok" id="admin-ok" role="status"></p>
+      </section>
+      <section class="card">
+        <h2>Upcoming events (saved)</h2>
+        <div id="admin-event-list" class="event-list"></div>
+      </section>
+    </div>
 
     <footer>
-      Fatima Tabasum · Saadia Asghar · Theory of Data Science · <code>output/model/</code>
-      · <a href="/presentation">Presentation page for class</a>
-      · <a href="/design-preview">Design preview</a>
+      Fatima Tabasum · Saadia Asghar · Theory of Data Science · model: <code>output/model/</code> · cohort: <code>output/combined_with_clusters.csv</code>
     </footer>
   </div>
   <script src="/assets/app.js"></script>

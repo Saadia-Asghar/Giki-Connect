@@ -1,15 +1,21 @@
 """
-GIKI-Connect — local app: uses trained K-Means + scaler from output/model/.
-Run:  python app_server.py   OR double-click START_APP.bat (Windows)
+GIKI-Connect — Flask app using the trained K-Means pipeline from the notebook.
 
-Picks a free port from 8765 upward and opens your browser automatically.
+Uses joblib pickles in output/model/ (same scaler + kmeans as notebook).
+Suggests campus events (admin-posted) and anonymized peers from output/combined_with_clusters.csv
+by matching interest tribe (cluster) + hobby overlap.
+
+Run: python app_server.py  or  START_APP.bat
 """
 from __future__ import annotations
 
+import csv
 import json
+import os
 import socket
 import threading
 import time
+import uuid
 import webbrowser
 from pathlib import Path
 
@@ -19,9 +25,12 @@ from flask import Flask, jsonify, request, send_from_directory
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
-DESIGN = ROOT / "design"
 MODEL_DIR = ROOT / "output" / "model"
-FIGMA_SVG = DESIGN / "giki-app-figma.svg"
+COHORT_CSV = ROOT / "output" / "combined_with_clusters.csv"
+EVENTS_JSON = ROOT / "data" / "events.json"
+
+# Change in production; for local demo only.
+ADMIN_TOKEN = os.environ.get("GIKI_ADMIN_TOKEN", "giki-admin-demo")
 
 HOBBIES = [
     "Music",
@@ -40,6 +49,8 @@ HOBBIES = [
     "Skating",
 ]
 
+_cohort: list[dict] = []
+
 
 def hobby_col(h: str) -> str:
     return f"h_{h.replace(' ', '_').replace('/', '').replace(',', '')}"
@@ -52,6 +63,86 @@ def load_artifacts():
     feature_cols = joblib.load(MODEL_DIR / "feature_cols.pkl")
     with open(MODEL_DIR / "cluster_profiles.json", encoding="utf-8") as f:
         cluster_profiles = json.load(f)
+
+
+def load_cohort():
+    global _cohort
+    _cohort = []
+    if not COHORT_CSV.is_file():
+        return
+    with open(COHORT_CSV, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            try:
+                row["_cluster"] = int(float(row.get("Cluster", -1)))
+            except (TypeError, ValueError):
+                continue
+            _cohort.append(row)
+
+
+def load_events_file() -> dict:
+    if not EVENTS_JSON.is_file():
+        EVENTS_JSON.parent.mkdir(parents=True, exist_ok=True)
+        EVENTS_JSON.write_text('{"events":[]}', encoding="utf-8")
+    with open(EVENTS_JSON, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_events_file(data: dict) -> None:
+    EVENTS_JSON.parent.mkdir(parents=True, exist_ok=True)
+    with open(EVENTS_JSON, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def suggest_peers(cluster: int, hobbies: list[str], limit: int = 6) -> list[dict]:
+    if not _cohort:
+        return []
+    want = set(hobbies)
+    scored: list[tuple[int, dict]] = []
+    for row in _cohort:
+        if row.get("_cluster") != cluster:
+            continue
+        raw_h = row.get("Hobbies") or ""
+        theirs = {x.strip() for x in raw_h.replace(";", ",").split(",") if x.strip()}
+        overlap = len(want & theirs)
+        reg = str(row.get("Reg", "")).strip()
+        if reg.upper().startswith("ANON"):
+            display = reg
+        else:
+            display = f"Student …{reg[-4:]}" if len(reg) >= 4 else "Student"
+        scored.append(
+            (
+                overlap,
+                {
+                    "display": display,
+                    "faculty": row.get("Faculty", ""),
+                    "province": row.get("Province", ""),
+                    "hobbies_preview": ", ".join(sorted(theirs)[:6]),
+                    "shared_hobbies": sorted(want & theirs),
+                    "overlap": overlap,
+                },
+            )
+        )
+    scored.sort(key=lambda x: (-x[0], x[1]["display"]))
+    return [p for _, p in scored[:limit]]
+
+
+def suggest_events(cluster: int, hobbies: list[str]) -> list[dict]:
+    data = load_events_file()
+    events = data.get("events") or []
+    hs = set(hobbies)
+    scored: list[tuple[float, dict]] = []
+    for e in events:
+        tags = set(e.get("hobby_tags") or [])
+        clusters = e.get("clusters") or []
+        overlap = len(hs & tags)
+        c_bonus = 2.0 if cluster in clusters else (0.5 if not clusters else 0.0)
+        score = overlap * 3 + c_bonus
+        scored.append((score, e))
+    scored.sort(key=lambda x: -x[0])
+    picked = [dict(e) for s, e in scored if s > 0][:8]
+    if not picked:
+        picked = [dict(e) for s, e in scored[:5]]
+    return picked
 
 
 def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_pct: float, same_fac_pct: float):
@@ -82,6 +173,8 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
         if silo > 0.5
         else "Your profile fits this interest tribe — great anchor for mixers and collaborations."
     )
+    peers = suggest_peers(cluster, hobbies)
+    events = suggest_events(cluster, hobbies)
     return {
         "cluster": cluster,
         "tribe_name": prof["name"],
@@ -91,19 +184,13 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
         "silo_index": silo,
         "silo_label": silo_lbl,
         "recommendation": rec,
+        "suggested_peers": peers,
+        "suggested_events": events,
+        "model_note": "Predictions use output/model/kmeans.pkl + scaler.pkl (same training as the notebook).",
     }
 
 
 app = Flask(__name__, static_folder=str(WEB), static_url_path="/assets")
-
-
-@app.after_request
-def _cors(resp):
-    """So PRESENTATION_OFFLINE.html can call the API from another port or file preview."""
-    resp.headers["Access-Control-Allow-Origin"] = "*"
-    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    return resp
 
 
 @app.get("/")
@@ -111,36 +198,45 @@ def index():
     return send_from_directory(WEB, "index.html")
 
 
-@app.get("/presentation")
-def presentation():
-    """Same UI + story for class; uses live /api/predict when this tab is served by Flask."""
-    return send_from_directory(str(ROOT), "PRESENTATION_OFFLINE.html")
+@app.get("/api/events")
+def api_events_list():
+    return jsonify(load_events_file())
 
 
-@app.get("/figma.svg")
-def figma_svg():
-    if not FIGMA_SVG.is_file():
-        return ("SVG not found", 404)
-    return send_from_directory(str(DESIGN), "giki-app-figma.svg", mimetype="image/svg+xml")
-
-
-@app.get("/design-preview")
-def design_preview():
-    """Static layout preview for Figma handoff (matches design/giki-app-figma.svg)."""
-    return (
-        "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'/>"
-        "<meta name='viewport' content='width=device-width, initial-scale=1'/>"
-        "<title>GIKI-Connect — design preview</title>"
-        "<style>body{margin:0;background:#0c1222;color:#8b95b0;font-family:system-ui,sans-serif;"
-        "min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px;}"
-        "a{color:#2dd4bf}img{max-width:100%;height:auto;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.45)}"
-        "p{max-width:36rem;text-align:center;font-size:14px;margin-top:16px}</style></head><body>"
-        "<p>Import this same graphic into Figma via <strong>File → Import</strong> → "
-        "<code>design/giki-app-figma.svg</code></p>"
-        "<p><a href='/'>← Back to app</a> · <a href='/figma.svg' download>Download SVG</a></p>"
-        "<img src='/figma.svg' width='393' height='1200' alt='GIKI-Connect Figma frame'/>"
-        "</body></html>"
-    )
+@app.route("/api/events", methods=["POST", "OPTIONS"])
+def api_events_create():
+    if request.method == "OPTIONS":
+        return ("", 204)
+    if request.headers.get("X-Admin-Token", "") != ADMIN_TOKEN:
+        return jsonify({"error": "Admin token required (header X-Admin-Token)."}), 403
+    data = request.get_json(force=True, silent=True) or {}
+    title = (data.get("title") or "").strip()
+    when_iso = (data.get("when_iso") or "").strip()
+    place = (data.get("place") or "").strip()
+    description = (data.get("description") or "").strip()
+    hobby_tags = [str(x) for x in (data.get("hobby_tags") or []) if str(x) in HOBBIES]
+    clusters_raw = data.get("clusters") or []
+    clusters: list[int] = []
+    for c in clusters_raw:
+        try:
+            clusters.append(int(c))
+        except (TypeError, ValueError):
+            continue
+    if not title or not when_iso:
+        return jsonify({"error": "title and when_iso are required."}), 400
+    store = load_events_file()
+    ev = {
+        "id": str(uuid.uuid4())[:12],
+        "title": title,
+        "when_iso": when_iso,
+        "place": place,
+        "description": description,
+        "hobby_tags": hobby_tags,
+        "clusters": clusters,
+    }
+    store.setdefault("events", []).insert(0, ev)
+    save_events_file(store)
+    return jsonify({"ok": True, "event": ev})
 
 
 @app.route("/api/predict", methods=["POST", "OPTIONS"])
@@ -191,6 +287,7 @@ def main():
             f"Missing model files under {MODEL_DIR}. Run GIKI_Connect_Notebook.ipynb first."
         )
     load_artifacts()
+    load_cohort()
     port = _pick_port()
     base = f"http://127.0.0.1:{port}"
     url = f"{base}/"
@@ -205,11 +302,10 @@ def main():
     print("=" * 56)
     print("  GIKI-Connect — SERVER IS RUNNING")
     print("=" * 56)
-    print(f"  App:            {url}")
-    print(f"  For Sir / slides: {base}/presentation")
-    print(f"  Design preview:   {base}/design-preview")
-    print(f"  Double-click:     PRESENTATION_OFFLINE.html (works offline; live if server is up)")
-    print("  Keep this window OPEN while you present. Ctrl+C to stop.")
+    print(f"  App:     {url}")
+    print(f"  Admin:   post events with header X-Admin-Token: {ADMIN_TOKEN}")
+    print("  (Set GIKI_ADMIN_TOKEN env var to change the demo token.)")
+    print("  Keep this window open. Ctrl+C to stop.")
     print("=" * 56)
     print()
     app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)

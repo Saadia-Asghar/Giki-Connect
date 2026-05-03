@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GIKI-Connect — Social siloing &amp; society bridge</title>
+  <title>GIKI-Connect — Find your interest tribe (live demo)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
@@ -13,9 +13,8 @@
   <div class="wrap">
     <header class="top">
       <div>
-        <div class="badge">Theory of Data Science · GIKI</div>
-        <h1>GIKI-Connect</h1>
-        <p class="lede">Residential campus, small friendship circles, <strong>societies as the bridge</strong>—this demo turns survey-style inputs into <strong>interest-tribe</strong> suggestions (events + who to say hi to). Admins post real mixers using tribe IDs and hobby tags.</p>
+        <div class="badge">GIKI-Connect</div>
+        <p class="lede">Student live demo + admin event board. Use the <strong>Student</strong> tab to match your profile; use <strong>GIKI admin</strong> to publish mixers.</p>
       </div>
       <nav class="tabs" role="tablist">
         <button type="button" class="tab active" data-tab="student" role="tab" aria-selected="true">Student</button>
@@ -24,6 +23,15 @@
     </header>
 
     <div id="panel-student" class="panel">
+      <section class="card demo-hero">
+        <div class="badge">Live Demo · Theory of Data Science · GIKI</div>
+        <h1 class="demo-title">Find Your Interest Tribe</h1>
+        <p class="demo-blurb">Enter your details below. The saved <strong>K-Means</strong> model places you in one of <strong>four</strong> interest tribes learned from the GIKI survey pipeline (hobbies + society + comfort + silo index)—same pickles as the notebook.</p>
+        <div class="demo-stats" id="demo-stats" aria-live="polite">
+          <p class="hint">Loading stats…</p>
+        </div>
+      </section>
+
       <section class="card insight-card">
         <h2>Project context</h2>
         <div id="student-insight-body" class="insight-body">
@@ -32,35 +40,71 @@
       </section>
 
       <section class="card">
-        <h2>Your hobbies</h2>
-        <p class="hint">Select all that apply (at least one).</p>
-        <div class="hobby-grid" id="hobby-grid"></div>
+        <h2>Your academic profile</h2>
+        <div class="field">
+          <label for="faculty">Faculty</label>
+          <select id="faculty" class="text-input">
+            <option value="">Select your faculty</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="year">Year of study</label>
+          <select id="year" class="text-input">
+            <option value="">Select year</option>
+          </select>
+        </div>
       </section>
 
       <section class="card">
-        <h2>Social context</h2>
+        <h2>Social connectivity</h2>
+        <p class="hint">Smooth sliders 0–100% (same style as the survey).</p>
         <div class="field">
-          <label>Society hours / week <strong id="soc_hours_v">0 h/wk</strong></label>
-          <input type="range" id="soc_hours" min="0" max="10" step="0.5" value="0" />
-        </div>
-        <div class="field">
-          <label>Comfort talking to new people (1–5) <strong id="comfort_v">4</strong></label>
-          <input type="range" id="comfort" min="1" max="5" step="1" value="4" />
-        </div>
-        <div class="field">
-          <label>Approx. close friends (count, survey scale) <strong id="friends_v">4</strong></label>
-          <input type="range" id="friends" min="1" max="12" step="0.5" value="4" />
-        </div>
-        <div class="field">
-          <label>Close friends from <em>same province</em> (%) <strong id="same_prov_pct_v">50%</strong></label>
+          <label>% close friends from <em>same province</em> <strong id="same_prov_pct_v">50%</strong></label>
           <input type="range" id="same_prov_pct" min="0" max="100" step="5" value="50" />
         </div>
         <div class="field">
-          <label>Close friends from <em>same faculty</em> (%) <strong id="same_fac_pct_v">50%</strong></label>
+          <label>% close friends from <em>same faculty</em> <strong id="same_fac_pct_v">50%</strong></label>
           <input type="range" id="same_fac_pct" min="0" max="100" step="5" value="50" />
         </div>
-        <button type="button" class="primary" id="submit">Get suggestions</button>
+        <div class="field">
+          <label>Approx. close friends at GIKI (count) <strong id="friends_v">4</strong></label>
+          <input type="range" id="friends" min="1" max="20" step="0.5" value="4" />
+        </div>
+        <div class="field">
+          <label>Comfort talking to students from <em>other provinces</em> (1–5) <strong id="comfort_v">4</strong></label>
+          <input type="range" id="comfort" min="1" max="5" step="1" value="4" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Society involvement</h2>
+        <fieldset class="field soc-fieldset">
+          <legend>Society member?</legend>
+          <label class="inline"><input type="radio" name="soc_member" value="yes" checked /> Yes — I&apos;m a member</label>
+          <label class="inline"><input type="radio" name="soc_member" value="no" /> Not a member</label>
+        </fieldset>
+        <div class="field" id="soc-hours-wrap">
+          <label>Society hours per week <strong id="soc_hours_v">0 h/wk</strong></label>
+          <input type="range" id="soc_hours" min="0" max="10" step="0.5" value="0" />
+        </div>
+        <div class="field">
+          <label for="societies">Which societies are you in? (optional)</label>
+          <input type="text" id="societies" class="text-input" placeholder="e.g. IEEE, GDSC" autocomplete="off" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Your hobbies &amp; interests</h2>
+        <p class="hint">Select all that apply (at least one).</p>
+        <div class="hobby-grid" id="hobby-grid"></div>
+        <button type="button" class="primary" id="submit">Find My Interest Tribe</button>
         <p class="error" id="error" role="alert"></p>
+      </section>
+
+      <section class="card tribe-showcase-card">
+        <h2>The 4 interest tribes at GIKI</h2>
+        <p class="hint">From the trained cohort (names follow top hobbies in each cluster).</p>
+        <div id="public-tribe-cards" class="tribe-atlas-grid"></div>
       </section>
 
       <section class="card hidden" id="result" aria-live="polite">

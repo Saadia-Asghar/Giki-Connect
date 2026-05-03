@@ -20,6 +20,9 @@ const TRIBE_ACCENT = ["#2dd4bf", "#818cf8", "#f472b6", "#fbbf24"];
 /** @type {null | Record<string, unknown>} */
 let tribesData = null;
 
+/** @type {null | Record<string, unknown>} */
+let metaData = null;
+
 function el(id) {
   return document.getElementById(id);
 }
@@ -93,8 +96,8 @@ function renderStudentInsight() {
   `;
 }
 
-function renderAdminTribeAtlas() {
-  const grid = el("admin-tribe-cards");
+function renderTribeGrid(containerId) {
+  const grid = el(containerId);
   if (!tribesData || !grid) return;
   grid.innerHTML = "";
   (tribesData.tribes || []).forEach((t) => {
@@ -111,6 +114,14 @@ function renderAdminTribeAtlas() {
     `;
     grid.appendChild(card);
   });
+}
+
+function renderAdminTribeAtlas() {
+  renderTribeGrid("admin-tribe-cards");
+}
+
+function renderPublicTribeShowcase() {
+  renderTribeGrid("public-tribe-cards");
 }
 
 function readSliders() {
@@ -197,7 +208,14 @@ async function predict() {
   const hobbies = Array.from(
     document.querySelectorAll("#hobby-grid input:checked"),
   ).map((i) => i.value);
-  const body = { hobbies, ...readSliders() };
+  const body = {
+    hobbies,
+    ...readSliders(),
+    soc_member: readSocMember(),
+    faculty: el("faculty")?.value || "",
+    year: el("year")?.value || "",
+    societies: el("societies")?.value?.trim() || "",
+  };
   const btn = el("submit");
   btn.disabled = true;
   try {
@@ -330,17 +348,100 @@ async function loadTribesContext() {
   }
 }
 
+async function loadMeta() {
+  try {
+    const r = await fetch("/api/meta");
+    if (r.ok) metaData = await r.json();
+  } catch {
+    metaData = null;
+  }
+}
+
+function renderDemoStats() {
+  const root = el("demo-stats");
+  if (!root) return;
+  if (!metaData) {
+    root.innerHTML = "<p class=\"hint\">Stats unavailable (is the server running?).</p>";
+    return;
+  }
+  const pca =
+    metaData.pca_variance_pct != null
+      ? `${escapeHtml(String(metaData.pca_variance_pct))}%`
+      : "—";
+  root.innerHTML = `
+    <div class="stat"><strong>${escapeHtml(String(metaData.total_profiles))}</strong><span>profiles in cohort</span></div>
+    <div class="stat"><strong>${escapeHtml(String(metaData.k_clusters))}</strong><span>clusters (K-Means)</span></div>
+    <div class="stat"><strong>${escapeHtml(String(metaData.n_features))}</strong><span>features in model</span></div>
+    <div class="stat"><strong>${pca}</strong><span>PCA variance (2D viz)</span></div>
+  `;
+}
+
+function fillFacultyYearSelects() {
+  const fac = el("faculty");
+  const yr = el("year");
+  if (!fac || !yr || !metaData) return;
+  const facs = metaData.faculties || [];
+  const years = metaData.years || [];
+  fac.replaceChildren();
+  yr.replaceChildren();
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = "Select your faculty";
+  fac.appendChild(opt0);
+  facs.forEach((f) => {
+    const o = document.createElement("option");
+    o.value = f;
+    o.textContent = f;
+    fac.appendChild(o);
+  });
+  const y0 = document.createElement("option");
+  y0.value = "";
+  y0.textContent = "Select year";
+  yr.appendChild(y0);
+  years.forEach((y) => {
+    const o = document.createElement("option");
+    o.value = y;
+    o.textContent = y;
+    yr.appendChild(o);
+  });
+}
+
+function readSocMember() {
+  const r = document.querySelector('input[name="soc_member"]:checked');
+  return !!(r && r.value === "yes");
+}
+
+function syncSocMemberUi() {
+  const wrap = el("soc-hours-wrap");
+  if (!wrap) return;
+  const on = readSocMember();
+  wrap.style.opacity = on ? "1" : "0.45";
+  wrap.querySelectorAll("input").forEach((inp) => {
+    inp.disabled = !on;
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadTribesContext();
+  await Promise.all([loadMeta(), loadTribesContext()]);
+  renderDemoStats();
+  fillFacultyYearSelects();
   buildHobbyGrid("hobby-grid");
   buildHobbyGrid("admin-hobby-grid");
   buildClusterPicks();
   renderStudentInsight();
   renderAdminTribeAtlas();
+  renderPublicTribeShowcase();
   setupTabs();
   ["soc_hours", "comfort", "friends", "same_prov_pct", "same_fac_pct"].forEach((id) => {
     el(id).addEventListener("input", syncSliderLabels);
   });
+  document.querySelectorAll('input[name="soc_member"]').forEach((inp) => {
+    inp.addEventListener("change", () => {
+      syncSocMemberUi();
+      syncSliderLabels();
+    });
+  });
+  syncSocMemberUi();
   syncSliderLabels();
   el("submit").addEventListener("click", predict);
   el("admin-submit").addEventListener("click", adminPostEvent);

@@ -61,6 +61,10 @@ HOBBIES = [
 
 _cohort: list[dict] = []
 
+# Populated from cohort CSV for demo form (faculty / year pickers).
+_FORM_FACULTIES: list[str] = []
+_FORM_YEARS: list[str] = []
+
 # Shown in /api/tribes — helps admins map events to K-Means clusters (ids 0–3).
 TRIBE_ADMIN_GUIDE = {
     "0": "Strong on skating, music, cooking vibes — rink outings, open-mic, potluck-style mixers.",
@@ -122,9 +126,23 @@ def load_artifacts():
         cluster_profiles = json.load(f)
 
 
+def _unique_csv_column(path: Path, column: str) -> list[str]:
+    if not path.is_file():
+        return []
+    seen: set[str] = set()
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            v = (row.get(column) or "").strip()
+            if v:
+                seen.add(v)
+    return sorted(seen)
+
+
 def load_cohort():
-    global _cohort
+    global _cohort, _FORM_FACULTIES, _FORM_YEARS
     _cohort = []
+    _FORM_FACULTIES = []
+    _FORM_YEARS = []
     if not COHORT_CSV.is_file():
         return
     with open(COHORT_CSV, newline="", encoding="utf-8") as f:
@@ -134,6 +152,24 @@ def load_cohort():
             except (TypeError, ValueError):
                 continue
             _cohort.append(row)
+    _FORM_FACULTIES = _unique_csv_column(COHORT_CSV, "Faculty")
+    _FORM_YEARS = _unique_csv_column(COHORT_CSV, "Year")
+
+
+def training_meta() -> dict:
+    """Live numbers for demo banner — matches saved model & cohort."""
+    total_n = sum(int(p["n"]) for p in cluster_profiles.values())
+    pca_pct: float | None = None
+    pca_path = MODEL_DIR / "pca.pkl"
+    if pca_path.is_file():
+        pca = joblib.load(pca_path)
+        pca_pct = round(float(sum(pca.explained_variance_ratio_)) * 100, 2)
+    return {
+        "k_clusters": len(cluster_profiles),
+        "total_profiles": total_n,
+        "n_features": len(feature_cols),
+        "pca_variance_pct": pca_pct,
+    }
 
 
 def load_events_file() -> dict:
@@ -311,6 +347,18 @@ def api_tribes():
     return jsonify(tribes_payload())
 
 
+@app.get("/api/meta")
+def api_meta():
+    """Demo stats + form dropdown options (faculty / year from cohort CSV)."""
+    return jsonify(
+        {
+            **training_meta(),
+            "faculties": _FORM_FACULTIES,
+            "years": _FORM_YEARS,
+        }
+    )
+
+
 @app.get("/api/events")
 def api_events_list():
     return jsonify(load_events_file())
@@ -370,6 +418,14 @@ def api_predict():
     except (TypeError, ValueError):
         return jsonify({"error": "invalid numeric fields"}), 400
 
+    soc_member_raw = data.get("soc_member", True)
+    if isinstance(soc_member_raw, str):
+        soc_member = soc_member_raw.strip().lower() in ("yes", "true", "1", "y", "member")
+    else:
+        soc_member = bool(soc_member_raw)
+    if not soc_member:
+        soc = 0.0
+
     soc = max(0.0, min(soc, 20.0))
     comfort = max(1.0, min(comfort, 5.0))
     sp = max(0.0, min(sp, 100.0))
@@ -380,6 +436,12 @@ def api_predict():
         return jsonify({"error": "Pick at least one hobby."}), 400
 
     out = predict_row(hobbies, soc, comfort, sp, sf, friends)
+    out["submitted"] = {
+        "faculty": str(data.get("faculty") or "").strip()[:120],
+        "year": str(data.get("year") or "").strip()[:80],
+        "soc_member": soc_member,
+        "societies": str(data.get("societies") or "").strip()[:500],
+    }
     return jsonify(out)
 
 

@@ -15,7 +15,42 @@ const HOBBIES = [
   "Skating",
 ];
 
-const TRIBE_ACCENT = ["#2dd4bf", "#818cf8", "#f472b6", "#fbbf24"];
+/**
+ * GIK Institute student societies (Campus Life → Student Societies), plus common tech clubs.
+ * Chips only — echoed in API as submitted.societies; not used by K-Means unless you retrain.
+ */
+const SOCIETIES = [
+  "ACM (GIK chapter)",
+  "AIAA (GIK)",
+  "AIChE (GIK)",
+  "ASHRAE (GIK)",
+  "ASME (GIK)",
+  "ASM/TMS (GIK)",
+  "CDES (dramatics & entertainment)",
+  "Character Building Society",
+  "GIK Sports Society",
+  "GIK WebTeam",
+  "GMS — Mathematics Society",
+  "Google Developer Groups on Campus (GDGoC)",
+  "Graduate Students Society",
+  "IEEE (GIK chapter)",
+  "IET (GIK chapter)",
+  "Literary and Debating Society",
+  "Media Club",
+  "Microsoft Club GIK",
+  "Naqsh Arts Society",
+  "Netronix",
+  "Project Topi",
+  "Science Society",
+  "SOPHEP",
+  "SPIE (GIK chapter)",
+  "Women Engineers Society",
+];
+
+const TRIBE_ACCENT = ["#7c1d3a", "#9c2748", "#a8556f", "#b45309"];
+
+const ATLAS_INTRO_DEFAULT =
+  'Each card is one <strong>K-Means cluster</strong> (IDs <strong>0–3</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.';
 
 /** @type {null | Record<string, unknown>} */
 let tribesData = null;
@@ -25,6 +60,20 @@ let metaData = null;
 
 function el(id) {
   return document.getElementById(id);
+}
+
+function setResultsJumpAvailable(on) {
+  const a = el("jump-to-results");
+  if (!a) return;
+  a.classList.toggle("is-disabled", !on);
+  a.setAttribute("aria-disabled", on ? "false" : "true");
+  if (on) {
+    a.removeAttribute("tabindex");
+    a.removeAttribute("title");
+  } else {
+    a.setAttribute("tabindex", "-1");
+    a.setAttribute("title", "Run the model first — then use this link to jump to your results.");
+  }
 }
 
 function escapeHtml(s) {
@@ -40,24 +89,50 @@ function tribeById(id) {
 
 function tribeLabel(id) {
   const t = tribeById(id);
-  return t ? `${id} — ${t.name}` : `Tribe ${id}`;
+  return t ? `Tribe ID ${id} — ${t.name}` : `Tribe ID ${id}`;
 }
 
-function buildHobbyGrid(containerId) {
+function slugId(s) {
+  const raw = String(s)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return (raw || "item").slice(0, 36);
+}
+
+/** @param {{ idPrefix?: string }} [options] */
+function buildChipGrid(containerId, items, options = {}) {
   const grid = el(containerId);
   if (!grid) return;
+  const idPrefix = options.idPrefix || containerId;
   grid.innerHTML = "";
-  HOBBIES.forEach((h) => {
+  items.forEach((name, idx) => {
     const lab = document.createElement("label");
     const inp = document.createElement("input");
     inp.type = "checkbox";
-    inp.value = h;
+    inp.value = name;
+    const sid = `${idPrefix}-${slugId(name)}-${idx}`;
+    inp.id = sid;
+    lab.setAttribute("for", sid);
     const sp = document.createElement("span");
-    sp.textContent = h;
+    sp.textContent = name;
     lab.appendChild(inp);
     lab.appendChild(sp);
     grid.appendChild(lab);
   });
+}
+
+function buildHobbyGrid(containerId) {
+  buildChipGrid(containerId, HOBBIES, {
+    idPrefix: containerId.replace(/-/g, "_"),
+  });
+}
+
+function readSelectedSocieties() {
+  if (!readSocMember()) return "";
+  return Array.from(document.querySelectorAll("#society-grid input:checked"))
+    .map((i) => i.value)
+    .join(", ");
 }
 
 function buildClusterPicks() {
@@ -103,10 +178,16 @@ function renderTribeGrid(containerId) {
   (tribesData.tribes || []).forEach((t) => {
     const card = document.createElement("article");
     card.className = "tribe-mini-card";
+    card.dataset.tribeId = String(t.id);
     card.style.borderLeftColor = TRIBE_ACCENT[t.id % 4] || TRIBE_ACCENT[0];
     const tops = (t.top_hobbies || []).join(", ");
+    card.setAttribute("role", "group");
+    card.setAttribute(
+      "aria-label",
+      `Tribe ID ${t.id}, ${escapeHtml(t.name)}, ${t.n} students in training sample`,
+    );
     card.innerHTML = `
-      <div class="tribe-mini-id">Tribe ${t.id}</div>
+      <div class="tribe-mini-id">Tribe ID ${t.id}</div>
       <h4 class="tribe-mini-name">${escapeHtml(t.name)}</h4>
       <p class="tribe-mini-stats">${t.n} students in sample · avg friendship concentration ${t.avg_silo}</p>
       <p class="tribe-mini-tops">Top hobbies: <strong>${escapeHtml(tops)}</strong></p>
@@ -141,6 +222,17 @@ function syncSliderLabels() {
   el("friends_v").textContent = String(s.friends);
   el("same_prov_pct_v").textContent = `${Math.round(s.same_prov_pct)}%`;
   el("same_fac_pct_v").textContent = `${Math.round(s.same_fac_pct)}%`;
+
+  const sh = el("soc_hours");
+  if (sh) sh.setAttribute("aria-valuetext", `${s.soc_hours} hours per week`);
+  const cm = el("comfort");
+  if (cm) cm.setAttribute("aria-valuetext", `${s.comfort} of 5`);
+  const fr = el("friends");
+  if (fr) fr.setAttribute("aria-valuetext", `${s.friends} close friends`);
+  const sp = el("same_prov_pct");
+  if (sp) sp.setAttribute("aria-valuetext", `${Math.round(s.same_prov_pct)} percent`);
+  const sf = el("same_fac_pct");
+  if (sf) sf.setAttribute("aria-valuetext", `${Math.round(s.same_fac_pct)} percent`);
 }
 
 function fmtWhen(iso) {
@@ -194,12 +286,109 @@ function renderPeerList(peers) {
     return;
   }
   peers.forEach((p) => {
-    const div = document.createElement("div");
-    div.className = "peer-row";
+    const div = document.createElement("article");
+    div.className = "peer-card";
     const shared = (p.shared_hobbies || []).join(", ") || "—";
-    div.innerHTML = `<div class="who">${escapeHtml(p.display)}</div><div class="meta">${escapeHtml(p.faculty || "")} · ${escapeHtml(p.province || "")}</div><div class="meta">${escapeHtml(p.hobbies_preview || "")}</div><div class="shared">Try chatting about: ${escapeHtml(shared)}</div>`;
+    const topH = (p.shared_hobbies || [])[0] || "shared interests";
+    const tag =
+      shared !== "—"
+        ? `Often joins ${escapeHtml(topH)} circles; overlaps with you on ${escapeHtml(shared)}.`
+        : "Same cluster in the training sample—use society or hobby channels for a soft hello.";
+    const yr = p.year ? ` · ${escapeHtml(String(p.year))}` : "";
+    const soc =
+      p.society_cue &&
+      `<div class="peer-cue"><span class="peer-cue-label">Society cue (from sample)</span> ${escapeHtml(p.society_cue)}</div>`;
+    div.innerHTML = `
+      <div class="peer-card-head">
+        <span class="peer-name">${escapeHtml(p.display)}</span>
+        <span class="peer-meta">${escapeHtml(p.faculty || "")}${yr}</span>
+      </div>
+      <p class="peer-tagline">${tag}</p>
+      ${soc || ""}
+      <div class="peer-interests"><span class="peer-interests-label">Interests</span> ${escapeHtml(p.hobbies_preview || "—")}</div>
+      <div class="peer-ice"><span class="peer-ice-label">Icebreaker</span> Offer a 20-minute concrete plan (walk, lab session, one game) instead of a vague “hang sometime”.</div>
+    `;
     root.appendChild(div);
   });
+}
+
+function renderInsightSections(sections) {
+  const root = el("insight-sections");
+  if (!root) return;
+  if (!sections || !sections.length) {
+    root.innerHTML = "";
+    return;
+  }
+  root.innerHTML = sections
+    .map((sec) => {
+      const sid = escapeHtml(String(sec.id || ""));
+      const bullets = (sec.bullets || [])
+        .map((b) => `<li>${escapeHtml(b)}</li>`)
+        .join("");
+      const sub = sec.subtitle
+        ? `<p class="insight-block-sub">${escapeHtml(sec.subtitle)}</p>`
+        : "";
+      const foot = sec.footnote
+        ? `<p class="insight-foot">${escapeHtml(sec.footnote)}</p>`
+        : "";
+      return `<section class="insight-block" data-insight="${sid}">
+        <h3 class="insight-block-title">${escapeHtml(sec.title || "")}</h3>
+        ${sub}
+        <ul class="insight-bullets">${bullets}</ul>
+        ${foot}
+      </section>`;
+    })
+    .join("");
+}
+
+function highlightPublicTribeCard(clusterId) {
+  document.querySelectorAll("#public-tribe-cards .tribe-mini-card").forEach((card) => {
+    const isYours =
+      clusterId != null &&
+      clusterId !== "" &&
+      Number(card.dataset.tribeId) === Number(clusterId);
+    card.classList.toggle("tribe-mini-card--yours", isYours);
+    card.classList.remove("tribe-mini-card--pulse");
+    if (isYours) {
+      // Re-trigger animation if user runs again.
+      void card.offsetWidth;
+      card.classList.add("tribe-mini-card--pulse");
+      window.setTimeout(() => {
+        card.classList.remove("tribe-mini-card--pulse");
+      }, 3200);
+    }
+  });
+}
+
+function setAtlasIntro(html) {
+  const intro = el("tribe-atlas-intro");
+  if (intro) intro.innerHTML = html;
+}
+
+function renderAssignmentExplain(ex) {
+  const body = el("assignment-explain-body");
+  if (!body) return;
+  if (!ex || !ex.lines || !ex.lines.length) {
+    body.innerHTML = "";
+    return;
+  }
+  const title = ex.title ? `<p class="assignment-lead">${escapeHtml(ex.title)}</p>` : "";
+  const lis = ex.lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("");
+  body.innerHTML = `${title}<ul class="assignment-list">${lis}</ul>`;
+}
+
+function renderResultStatChips(data) {
+  const root = el("result-stat-chips");
+  if (!root) return;
+  const ch = data.comfort_used != null ? String(data.comfort_used) : "—";
+  const sh = data.soc_hours_used != null ? String(data.soc_hours_used) : "—";
+  root.innerHTML = `
+    <li><span class="stat-chip-k">Training n</span><span class="stat-chip-v">${escapeHtml(String(data.tribe_size))}</span></li>
+    <li><span class="stat-chip-k">Cohort avg silo</span><span class="stat-chip-v">${escapeHtml(String(data.tribe_avg_silo))}</span></li>
+    <li><span class="stat-chip-k">Your silo</span><span class="stat-chip-v">${escapeHtml(String(data.silo_index))}</span></li>
+    <li><span class="stat-chip-k">Comfort</span><span class="stat-chip-v">${escapeHtml(ch)}</span></li>
+    <li><span class="stat-chip-k">Soc. h/wk</span><span class="stat-chip-v">${escapeHtml(sh)}</span></li>
+  `;
 }
 
 async function predict() {
@@ -214,7 +403,7 @@ async function predict() {
     soc_member: readSocMember(),
     faculty: el("faculty")?.value || "",
     year: el("year")?.value || "",
-    societies: el("societies")?.value?.trim() || "",
+    societies: readSelectedSocieties(),
   };
   const btn = el("submit");
   btn.disabled = true;
@@ -228,9 +417,23 @@ async function predict() {
     if (!r.ok) {
       err.textContent = data.error || "Request failed";
       el("result").classList.add("hidden");
+      setResultsJumpAvailable(false);
+      setAtlasIntro(ATLAS_INTRO_DEFAULT);
       return;
     }
-    el("tribe-title").textContent = `Your interest tribe: ${data.tribe_name}`;
+    const k = tribesData?.tribes?.length ?? 4;
+    const pill = el("tribe-id-pill");
+    if (pill) {
+      pill.textContent = `Tribe ID ${data.cluster}`;
+      pill.setAttribute(
+        "aria-label",
+        `Your K-Means tribe identifier is ${data.cluster}. There are ${k} clusters, numbered 0 through ${k - 1}.`,
+      );
+    }
+    el("tribe-title").textContent = data.tribe_name;
+    el("result-kicker").textContent = "You are in this tribe";
+    el("result-tagline").textContent = `K-Means assigned you to cluster ${data.cluster} (of ${k} total). The name and stats match output/model/cluster_profiles.json — the same labels as in GIKI_Connect_Notebook.`;
+    renderResultStatChips(data);
     el("silo-fill").style.width = `${Math.min(100, Number(data.silo_index) * 100)}%`;
     el("silo-label").textContent = `${data.silo_index} — ${data.silo_label}`;
     const pills = el("tribe-hobbies");
@@ -241,13 +444,33 @@ async function predict() {
       pills.appendChild(sp);
     });
     el("rec").textContent = data.recommendation;
+    renderInsightSections(data.insight_sections || []);
+    renderAssignmentExplain(data.assignment_explain);
+    const foot = el("result-model-foot");
+    if (foot) foot.textContent = data.result_footer || "";
     renderEvents("event-list", data.suggested_events, { showTargets: false });
     renderPeerList(data.suggested_peers || []);
-    el("result").classList.remove("hidden");
+    highlightPublicTribeCard(data.cluster);
+    setAtlasIntro(
+      `You matched <strong>Tribe ID ${data.cluster}</strong> — <strong>${escapeHtml(data.tribe_name)}</strong>. ` +
+        `Scroll this card row: <strong>yours is outlined in rose</strong> and labeled “Your tribe”.`,
+    );
+    const resultEl = el("result");
+    resultEl.classList.remove("hidden");
+    setResultsJumpAvailable(true);
+    resultEl.classList.remove("result-shell--reveal");
+    void resultEl.offsetWidth;
+    resultEl.classList.add("result-shell--reveal");
+    window.setTimeout(() => {
+      resultEl.classList.remove("result-shell--reveal");
+    }, 900);
+    resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) {
     err.textContent =
       "Cannot reach the server. Run START_APP.bat or python app_server.py.";
     el("result").classList.add("hidden");
+    setResultsJumpAvailable(false);
+    setAtlasIntro(ATLAS_INTRO_DEFAULT);
   } finally {
     btn.disabled = false;
   }
@@ -332,8 +555,15 @@ function setupTabs() {
         t.classList.toggle("active", t === tab);
         t.setAttribute("aria-selected", t === tab ? "true" : "false");
       });
-      el("panel-student").classList.toggle("hidden", name !== "student");
-      el("panel-admin").classList.toggle("hidden", name !== "admin");
+      const pStudent = el("panel-student");
+      const pGuide = el("panel-guide");
+      const pAdmin = el("panel-admin");
+      pStudent.classList.toggle("hidden", name !== "student");
+      pGuide.classList.toggle("hidden", name !== "guide");
+      pAdmin.classList.toggle("hidden", name !== "admin");
+      pStudent.setAttribute("aria-hidden", name === "student" ? "false" : "true");
+      pGuide.setAttribute("aria-hidden", name === "guide" ? "false" : "true");
+      pAdmin.setAttribute("aria-hidden", name === "admin" ? "false" : "true");
       if (name === "admin") loadAdminEvents();
     });
   });
@@ -412,13 +642,22 @@ function readSocMember() {
 }
 
 function syncSocMemberUi() {
-  const wrap = el("soc-hours-wrap");
-  if (!wrap) return;
   const on = readSocMember();
-  wrap.style.opacity = on ? "1" : "0.45";
-  wrap.querySelectorAll("input").forEach((inp) => {
-    inp.disabled = !on;
-  });
+  const hoursWrap = el("soc-hours-wrap");
+  const societiesWrap = el("soc-societies-wrap");
+  if (hoursWrap) {
+    hoursWrap.style.opacity = on ? "1" : "0.45";
+    hoursWrap.querySelectorAll("input").forEach((inp) => {
+      inp.disabled = !on;
+    });
+  }
+  if (societiesWrap) {
+    societiesWrap.style.opacity = on ? "1" : "0.45";
+    societiesWrap.querySelectorAll("#society-grid input").forEach((inp) => {
+      inp.disabled = !on;
+      if (!on) inp.checked = false;
+    });
+  }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -426,6 +665,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderDemoStats();
   fillFacultyYearSelects();
   buildHobbyGrid("hobby-grid");
+  buildChipGrid("society-grid", SOCIETIES, { idPrefix: "soc" });
   buildHobbyGrid("admin-hobby-grid");
   buildClusterPicks();
   renderStudentInsight();
@@ -445,4 +685,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   syncSliderLabels();
   el("submit").addEventListener("click", predict);
   el("admin-submit").addEventListener("click", adminPostEvent);
+  el("scroll-to-atlas")?.addEventListener("click", () => {
+    el("tribe-atlas-public")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  el("try-another-mix")?.addEventListener("click", () => {
+    el("step-hobbies")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  setResultsJumpAvailable(false);
+  const pStudent = el("panel-student");
+  const pGuide = el("panel-guide");
+  const pAdmin = el("panel-admin");
+  pStudent?.setAttribute("aria-hidden", "true");
+  pGuide?.setAttribute("aria-hidden", "false");
+  pAdmin?.setAttribute("aria-hidden", "true");
 });

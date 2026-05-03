@@ -100,6 +100,197 @@ def hobby_col(h: str) -> str:
     return f"h_{h.replace(' ', '_').replace('/', '').replace(',', '')}"
 
 
+# Short activity-format hints keyed to survey hobby labels (used in /api/predict copy only).
+HOBBY_MICRO_TIPS = {
+    "Music": "Try turn-taking formats (listening round, low-stakes open mic) so conversation is not only small talk.",
+    "Art": "Sketch-walks or timed collage blocks give people something to point at while they chat.",
+    "Cooking": "Potluck prep or one shared recipe keeps hands busy and lowers pressure to perform socially.",
+    "Fitness": "Pair warm-ups or short relay formats avoid one person leading the whole hour.",
+    "Football": "Small-sided games or skills drills create natural rotation between faces.",
+    "Hiking": "Pick a route with a clear halfway landmark so pairs can split and regroup comfortably.",
+    "Coding / Programming": "Pairing, mini demos, or bug hunts carry half the conversation in the work itself.",
+    "Reading": "Themed chapters or 20-minute silent blocks plus one debrief line keep introverts in the loop.",
+    "Debating": "Rotating prep roles and timed floor splits quieter voices in fairly.",
+    "Gaming": "Co-op rounds or board-game corners let people join without monopolising the mic.",
+    "Cricket": "Net sessions or fielding drills mix skill levels without awkward lulls.",
+    "Photography": "Photo walks with a shared prompt card beat unstructured mingling for first contact.",
+    "Travelling": "Itinerary snippets or budget hacks are easy icebreakers before deeper travel talk.",
+    "Skating": "Beginner lanes or buddy checks make repeat contact natural across weeks.",
+}
+
+
+def _first_society_token(societies: str) -> str:
+    s = (societies or "").strip()
+    if not s:
+        return ""
+    return s.split(",")[0].strip()[:72]
+
+
+def _hobby_sig(label: str) -> str:
+    """Loose key so 'Coding / Programming' matches notebook 'Coding  Programming'."""
+    return "".join(c.lower() for c in str(label) if c.isalnum())
+
+
+def _hobbies_overlap_tribe(user_hobbies: list[str], top_hobbies: list[str]) -> list[str]:
+    tops = [_hobby_sig(t) for t in top_hobbies]
+    out: list[str] = []
+    for h in user_hobbies:
+        hs = _hobby_sig(h)
+        if not hs:
+            continue
+        for i, ts in enumerate(tops):
+            if hs == ts or (len(hs) >= 8 and (hs in ts or ts in hs)):
+                out.append(h)
+                break
+    return list(dict.fromkeys(out))
+
+
+def build_insight_sections(
+    cluster: int,
+    prof: dict,
+    silo: float,
+    silo_lbl: str,
+    comfort: float,
+    soc_hours: float,
+    hobbies: list[str],
+    societies: str,
+) -> list[dict]:
+    """Rule-based narrative from model inputs + cluster profile (honest: not a second ML model)."""
+    top = [str(h) for h in prof.get("top_hobbies") or []]
+    cohort_silo = float(prof.get("avg_silo") or 0.5)
+    delta = silo - cohort_silo
+    key_bullets: list[str] = []
+
+    if comfort < 3:
+        key_bullets.append(
+            "Your comfort score is on the lower side for talking across provinces—seed trust with "
+            "low-commitment invites (one lab task, a short walk) before suggesting bigger collaborative projects."
+        )
+    elif comfort <= 4.25:
+        key_bullets.append(
+            "You sit in a balanced comfort band—alternate familiar hangouts with one new context per month."
+        )
+    else:
+        key_bullets.append(
+            "Higher comfort with cross-group chat—open formats can work; themed prompts or short rotations "
+            "still help quieter peers join without one voice dominating."
+        )
+
+    if silo >= 0.55:
+        key_bullets.append(
+            "Your estimated friendship concentration is on the higher side—layer light prompts or parallel "
+            "activities into technical or hobby hangouts so quieter people have a clear hook."
+        )
+    elif silo < 0.35:
+        key_bullets.append(
+            "Your estimate skews toward more diverse close ties—great footing for co-hosting mixed-faculty hangs; "
+            "still give newcomers a concrete first task so they know how to enter the conversation."
+        )
+
+    key_bullets = key_bullets[:4]
+
+    hobby_bullets: list[str] = []
+    overlap_h = _hobbies_overlap_tribe(hobbies, top)
+    if overlap_h:
+        hobby_bullets.append(
+            "You overlap this tribe’s top survey hobbies on "
+            + ", ".join(overlap_h[:3])
+            + "—use those topics as the shared spine when you reach out."
+        )
+    for h in hobbies[:3]:
+        tip = HOBBY_MICRO_TIPS.get(h)
+        if tip:
+            hobby_bullets.append(f"{h}: {tip}")
+    if not hobby_bullets:
+        hobby_bullets.append(
+            "Pick formats with a visible shared task so the activity carries part of the conversation for everyone."
+        )
+    hobby_bullets = hobby_bullets[:4]
+
+    soc_first = _first_society_token(societies)
+    society_bullets: list[str] = []
+    if soc_first:
+        society_bullets.append(
+            f"You selected societies including “{soc_first}” on the form (not fed into K-Means today)—"
+            "peer-led or committee-led sessions there usually beat one-way lectures for meeting same-interest people."
+        )
+    elif soc_hours >= 1.5:
+        society_bullets.append(
+            f"Society hours in your form are healthy ({soc_hours:.1f} h/wk)—consider dedicating one recurring slot "
+            "to invite someone from another faculty into an activity you already run."
+        )
+    else:
+        society_bullets.append(
+            "Societies act like a filter: members self-select topics they care about, so shared interests surface "
+            "faster than in a random tutorial group."
+        )
+    society_bullets.extend(
+        [
+            "Search or ask once about your strongest hobby inside a society channel or desk—shared activity beats cold small talk for a first real conversation.",
+            "Newcomers: say what you want in one line (study partner for X, casual football)—specificity gets replies; “anyone free?” rarely does.",
+            "Repeat beats perfect: showing up to the same society meet two weeks in a row beats one mega-event you never follow up.",
+        ]
+    )
+
+    cohort_bullets = [
+        f"This tribe ({prof.get('name', '')}) averages {cohort_silo:.3f} friendship concentration in the training sample; "
+        f"your estimate is {silo:.3f} ({silo_lbl}).",
+    ]
+    if delta > 0.08:
+        cohort_bullets.append(
+            "Your estimate sits above this tribe’s cohort average—structured hangs with a clear activity may feel easier than large unstructured rooms."
+        )
+    elif delta < -0.08:
+        cohort_bullets.append(
+            "Your estimate sits below this tribe’s cohort average—strong footing for hosting small hobby-led hangs that widen others’ circles."
+        )
+    else:
+        cohort_bullets.append(
+            "You are close to this tribe’s average—blend familiar faces with one new context when you plan the week."
+        )
+
+    event_shapes = [
+        "Quiet café blocks with optional show-and-tell at the end",
+        "Short co-design jams blending visual and systems thinking",
+        "Maker tables with parallel stations (art, board games, light prototyping)",
+        "Reading or game nights with themed corners people drift between",
+        "Outdoor segments paired with a lightweight shared task",
+    ]
+    i0 = cluster % len(event_shapes)
+    picked_shapes = [event_shapes[(i0 + j) % len(event_shapes)] for j in range(3)]
+
+    sections: list[dict] = [
+        {
+            "id": "key_pointers",
+            "title": "Key pointers",
+            "bullets": key_bullets,
+            "footnote": "Derived from your sliders, comfort score, and this cluster’s cohort averages in the training CSV—not a clinical assessment.",
+        },
+        {
+            "id": "hobby_formats",
+            "title": "Your hobbies → formats that fit",
+            "bullets": hobby_bullets,
+        },
+        {
+            "id": "societies_newcomers",
+            "title": "Societies & newcomers",
+            "bullets": society_bullets,
+        },
+        {
+            "id": "cohort_compare",
+            "title": "You vs this tribe’s training sample",
+            "bullets": cohort_bullets,
+        },
+        {
+            "id": "event_shapes",
+            "title": "Event shapes that tend to fit",
+            "subtitle": "Based on your tribe and inputs—not tied to a specific venue on campus.",
+            "bullets": picked_shapes,
+        },
+    ]
+    return sections
+
+
 def silo_index_from_report(friends: float, same_prov_pct: float, same_fac_pct: float) -> float:
     """Report definition: (# close friends same province OR same faculty) / (total close friends).
 
@@ -207,6 +398,8 @@ def suggest_peers(cluster: int, hobbies: list[str], limit: int = 6) -> list[dict
             display = reg
         else:
             display = f"Student …{reg[-4:]}" if len(reg) >= 4 else "Student"
+        soc_cell = str(row.get("Societies") or "").strip()
+        society_cue = soc_cell.split(",")[0].strip()[:56] if soc_cell else ""
         scored.append(
             (
                 overlap,
@@ -214,9 +407,11 @@ def suggest_peers(cluster: int, hobbies: list[str], limit: int = 6) -> list[dict
                     "display": display,
                     "faculty": row.get("Faculty", ""),
                     "province": row.get("Province", ""),
+                    "year": (row.get("Year") or "").strip(),
                     "hobbies_preview": ", ".join(sorted(theirs)[:6]),
                     "shared_hobbies": sorted(want & theirs),
                     "overlap": overlap,
+                    "society_cue": society_cue,
                 },
             )
         )
@@ -275,6 +470,7 @@ def predict_row(
     same_prov_pct: float,
     same_fac_pct: float,
     friends: float = 4.0,
+    societies: str = "",
 ):
     sel = set(hobbies)
     row = {}
@@ -314,6 +510,35 @@ def predict_row(
         )
     peers = suggest_peers(cluster, hobbies)
     events = suggest_events(cluster, hobbies)
+    insight_sections = build_insight_sections(
+        cluster,
+        prof,
+        silo,
+        silo_lbl,
+        comfort,
+        soc_hours,
+        hobbies,
+        societies,
+    )
+    k_all = len(cluster_profiles)
+    assignment_explain = {
+        "title": "How your tribe was chosen",
+        "lines": [
+            (
+                f"You are in cluster ID {cluster} (out of {k_all}). The friendly name \"{prof['name']}\" and the "
+                f"{prof['n']} students in sample line come from output/model/cluster_profiles.json — the same export the notebook uses to label tribes."
+            ),
+            (
+                "Assignment rule: your form builds one row with the 17 training features (hobby flags, society hours, "
+                "comfort, silo index). That row is scaled with output/model/scaler.pkl and passed to output/model/kmeans.pkl; "
+                "predict returns exactly one integer: the tribe ID you see above."
+            ),
+            (
+                "Faculty, year, and society chips are stored under submitted in the API response for your write-up, "
+                "but they are not multiplied into those 17 numbers unless you change the notebook, retrain, and export new pickles."
+            ),
+        ],
+    }
     return {
         "cluster": cluster,
         "tribe_name": prof["name"],
@@ -322,9 +547,17 @@ def predict_row(
         "top_hobbies": prof["top_hobbies"],
         "silo_index": silo,
         "silo_label": silo_lbl,
+        "comfort_used": comfort,
+        "soc_hours_used": soc_hours,
         "recommendation": rec,
         "suggested_peers": peers,
         "suggested_events": events,
+        "insight_sections": insight_sections,
+        "assignment_explain": assignment_explain,
+        "result_footer": (
+            "Narrative blocks combine your submitted sliders, the K-Means cluster label, "
+            "and cohort fields from combined_with_clusters.csv—simple rules, not a second model."
+        ),
         "model_note": "",
     }
 
@@ -435,12 +668,13 @@ def api_predict():
     if not hobbies:
         return jsonify({"error": "Pick at least one hobby."}), 400
 
-    out = predict_row(hobbies, soc, comfort, sp, sf, friends)
+    societies_in = str(data.get("societies") or "").strip()[:500]
+    out = predict_row(hobbies, soc, comfort, sp, sf, friends, societies_in)
     out["submitted"] = {
         "faculty": str(data.get("faculty") or "").strip()[:120],
         "year": str(data.get("year") or "").strip()[:80],
         "soc_member": soc_member,
-        "societies": str(data.get("societies") or "").strip()[:500],
+        "societies": societies_in,
     }
     return jsonify(out)
 

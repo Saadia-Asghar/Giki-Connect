@@ -3,44 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GIKI-Connect — Find your interest tribe (live demo)</title>
+  <meta name="description" content="GIKI-Connect: Theory of Data Science demo — K-Means interest tribes, silo index, and campus event suggestions for GIK Institute." />
+  <meta name="theme-color" content="#6e1a35" />
+  <title>GIKI-Connect · Interest tribes demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
   <div class="wrap">
-    <header class="top">
-      <div>
-        <div class="badge">GIKI-Connect</div>
-        <p class="lede">Student live demo + admin event board. Use the <strong>Student</strong> tab to match your profile; use <strong>GIKI admin</strong> to publish mixers.</p>
+    <header class="site-masthead" role="banner">
+      <div class="site-masthead__brand">
+        <div class="site-logo">
+          <span class="site-logo__mark">GIKI</span>
+          <span class="site-logo__word">Connect</span>
+        </div>
+        <p class="site-masthead__tagline">Theory of Data Science · course project demo</p>
       </div>
-      <nav class="tabs" role="tablist">
-        <button type="button" class="tab active" data-tab="student" role="tab" aria-selected="true">Student</button>
-        <button type="button" class="tab" data-tab="admin" role="tab" aria-selected="false">GIKI admin</button>
+      <p class="site-masthead__lede">Open <strong>How to use</strong> for a walkthrough, then <strong>Student</strong> to run the model or <strong>GIKI admin</strong> to post events.</p>
+      <nav class="tabs" role="tablist" aria-label="Main sections">
+        <button type="button" class="tab active" id="tab-btn-guide" data-tab="guide" role="tab" aria-selected="true" aria-controls="panel-guide">How to use</button>
+        <button type="button" class="tab" id="tab-btn-student" data-tab="student" role="tab" aria-selected="false" aria-controls="panel-student">Student</button>
+        <button type="button" class="tab" id="tab-btn-admin" data-tab="admin" role="tab" aria-selected="false" aria-controls="panel-admin">GIKI admin</button>
       </nav>
     </header>
 
-    <div id="panel-student" class="panel">
-      <section class="card demo-hero">
+    <div id="panel-student" class="panel hidden" role="tabpanel" aria-labelledby="tab-btn-student">
+      <section class="card demo-hero card--intro" id="student-hero">
         <div class="badge">Live Demo · Theory of Data Science · GIKI</div>
         <h1 class="demo-title">Find Your Interest Tribe</h1>
-        <p class="demo-blurb">Enter your details below. The saved <strong>K-Means</strong> model places you in one of <strong>four</strong> interest tribes learned from the GIKI survey pipeline (hobbies + society + comfort + silo index)—same pickles as the notebook.</p>
+        <p class="demo-lead">Fill the steps below in order, then run the model once. Your tribe ID and suggestions appear at the bottom.</p>
+        <p class="demo-blurb"><strong>Honest scope:</strong> one saved <strong>K-Means</strong> model (same <code>output/model/*.pkl</code> as the notebook) maps your <strong>hobbies + society hours + comfort + silo index</strong> to <strong>four</strong> tribes. Faculty, year, and society selections are for the form only—they do <em>not</em> change the cluster until you retrain with those features.</p>
         <div class="demo-stats" id="demo-stats" aria-live="polite">
           <p class="hint">Loading stats…</p>
         </div>
       </section>
 
-      <section class="card insight-card">
+      <nav class="student-jump-nav" aria-label="Jump to form steps or results">
+        <span class="student-jump-nav__label">On this page</span>
+        <div class="student-jump-nav__chips">
+          <a class="jump-chip" href="#student-hero">Intro</a>
+          <a class="jump-chip" href="#step-read">1 · Context</a>
+          <a class="jump-chip" href="#step-profile">2 · Profile</a>
+          <a class="jump-chip" href="#step-social">3 · Social</a>
+          <a class="jump-chip" href="#step-societies">4 · Societies</a>
+          <a class="jump-chip" href="#step-hobbies">5 · Hobbies</a>
+          <a class="jump-chip jump-chip--results is-disabled" href="#student-results" id="jump-to-results" aria-disabled="true" title="Available after you run the model">Results</a>
+          <a class="jump-chip" href="#tribe-atlas-public">4 tribes map</a>
+        </div>
+      </nav>
+
+      <main class="student-flow" aria-label="Student demo form">
+      <section class="card form-step insight-card" id="step-read">
+        <p class="step-kicker"><span class="step-num">1</span> Read first</p>
         <h2>Project context</h2>
         <div id="student-insight-body" class="insight-body">
           <p class="hint">Loading…</p>
         </div>
       </section>
 
-      <section class="card">
+      <section class="card form-step" id="step-profile">
+        <p class="step-kicker"><span class="step-num">2</span> Profile</p>
         <h2>Your academic profile</h2>
+        <p class="step-hint">Optional for the tribe model — useful for your report and realism.</p>
         <div class="field">
           <label for="faculty">Faculty</label>
           <select id="faculty" class="text-input">
@@ -55,85 +81,219 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card form-step" id="step-social">
+        <p class="step-kicker"><span class="step-num">3</span> Friendship pattern</p>
         <h2>Social connectivity</h2>
-        <p class="hint">Smooth sliders 0–100% (same style as the survey).</p>
+        <p class="step-hint">Sliders match the survey style (0–100% where shown). These feed your <strong>silo index</strong> for the model.</p>
         <div class="field">
-          <label>% close friends from <em>same province</em> <strong id="same_prov_pct_v">50%</strong></label>
-          <input type="range" id="same_prov_pct" min="0" max="100" step="5" value="50" />
+          <label for="same_prov_pct">% close friends from <em>same province</em> <strong id="same_prov_pct_v" aria-live="polite">50%</strong></label>
+          <input type="range" id="same_prov_pct" name="same_prov_pct" min="0" max="100" step="5" value="50" aria-valuetext="50 percent" />
         </div>
         <div class="field">
-          <label>% close friends from <em>same faculty</em> <strong id="same_fac_pct_v">50%</strong></label>
-          <input type="range" id="same_fac_pct" min="0" max="100" step="5" value="50" />
+          <label for="same_fac_pct">% close friends from <em>same faculty</em> <strong id="same_fac_pct_v" aria-live="polite">50%</strong></label>
+          <input type="range" id="same_fac_pct" name="same_fac_pct" min="0" max="100" step="5" value="50" aria-valuetext="50 percent" />
         </div>
         <div class="field">
-          <label>Approx. close friends at GIKI (count) <strong id="friends_v">4</strong></label>
-          <input type="range" id="friends" min="1" max="20" step="0.5" value="4" />
+          <label for="friends">Approx. close friends at GIKI (count) <strong id="friends_v" aria-live="polite">4</strong></label>
+          <input type="range" id="friends" name="friends" min="1" max="20" step="0.5" value="4" aria-valuetext="4 friends" />
         </div>
         <div class="field">
-          <label>Comfort talking to students from <em>other provinces</em> (1–5) <strong id="comfort_v">4</strong></label>
-          <input type="range" id="comfort" min="1" max="5" step="1" value="4" />
+          <label for="comfort">Comfort talking to students from <em>other provinces</em> (1–5) <strong id="comfort_v" aria-live="polite">4</strong></label>
+          <input type="range" id="comfort" name="comfort" min="1" max="5" step="1" value="4" aria-valuetext="4 of 5" />
         </div>
       </section>
 
-      <section class="card">
+      <section class="card form-step" id="step-societies">
+        <p class="step-kicker"><span class="step-num">4</span> Societies</p>
         <h2>Society involvement</h2>
+        <p class="step-hint">Hours are used by K-Means; society names are chips for your story only.</p>
         <fieldset class="field soc-fieldset">
           <legend>Society member?</legend>
           <label class="inline"><input type="radio" name="soc_member" value="yes" checked /> Yes — I&apos;m a member</label>
           <label class="inline"><input type="radio" name="soc_member" value="no" /> Not a member</label>
         </fieldset>
         <div class="field" id="soc-hours-wrap">
-          <label>Society hours per week <strong id="soc_hours_v">0 h/wk</strong></label>
-          <input type="range" id="soc_hours" min="0" max="10" step="0.5" value="0" />
+          <label for="soc_hours">Society hours per week <strong id="soc_hours_v" aria-live="polite">0 h/wk</strong></label>
+          <input type="range" id="soc_hours" name="soc_hours" min="0" max="10" step="0.5" value="0" aria-valuetext="0 hours per week" />
         </div>
-        <div class="field">
-          <label for="societies">Which societies are you in? (optional)</label>
-          <input type="text" id="societies" class="text-input" placeholder="e.g. IEEE, GDSC" autocomplete="off" />
+        <div class="field" id="soc-societies-wrap">
+          <label>Societies you belong to <span class="hint">(optional)</span></label>
+          <p class="hint" style="margin-top:0.25rem">Select any that apply — list follows <strong>GIK Institute</strong> campus-life societies (short labels for the form).</p>
+          <div class="hobby-grid society-grid" id="society-grid"></div>
         </div>
       </section>
 
-      <section class="card">
+      <section class="card form-step card--action" id="step-hobbies">
+        <p class="step-kicker"><span class="step-num">5</span> Interests &amp; run</p>
         <h2>Your hobbies &amp; interests</h2>
-        <p class="hint">Select all that apply (at least one).</p>
-        <div class="hobby-grid" id="hobby-grid"></div>
-        <button type="button" class="primary" id="submit">Find My Interest Tribe</button>
-        <p class="error" id="error" role="alert"></p>
-      </section>
-
-      <section class="card tribe-showcase-card">
-        <h2>The 4 interest tribes at GIKI</h2>
-        <p class="hint">From the trained cohort (names follow top hobbies in each cluster).</p>
-        <div id="public-tribe-cards" class="tribe-atlas-grid"></div>
-      </section>
-
-      <section class="card hidden" id="result" aria-live="polite">
-        <h2>Suggestions for you</h2>
-        <p class="result-tribe" id="tribe-title"></p>
-        <div class="silo-row">
-          <span>Friendship concentration (silo)</span>
-          <span id="silo-label"></span>
+        <p class="step-hint">Pick at least one hobby, then run the model.</p>
+        <div class="hobby-grid" id="hobby-grid" role="group" aria-label="Hobbies and interests — pick at least one for the model"></div>
+        <div class="action-cta">
+          <button type="button" class="primary" id="submit">Find my interest tribe</button>
+          <p class="action-cta__note">Results open below with your tribe ID, how it was chosen, events, and sample peers.</p>
+          <p class="error" id="error" role="alert"></p>
         </div>
-        <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
-        <p class="hint" style="margin-top:0.75rem">Typical hobbies others in this interest tribe share (from the analysis sample):</p>
-        <div class="pill-list" id="tribe-hobbies"></div>
-        <div class="rec" id="rec"></div>
+      </section>
+      </main>
 
-        <h3 class="subhead">Events to try</h3>
-        <p class="hint">Sorted so the ones that fit you rise to the top.</p>
-        <div id="event-list" class="event-list"></div>
+      <section class="card result-shell hidden" id="result" aria-live="polite" aria-labelledby="tribe-id-pill tribe-title">
+        <div id="student-results" class="result-anchor" tabindex="-1"></div>
+        <header class="result-hero" id="result-overview">
+          <p class="result-kicker" id="result-kicker">Your interest tribe</p>
+          <div class="result-tribe-row">
+            <span class="tribe-id-pill" id="tribe-id-pill" title="K-Means cluster ID from the saved model">Tribe ID —</span>
+            <h2 class="result-tribe-title" id="tribe-title"></h2>
+          </div>
+          <p class="result-tagline" id="result-tagline"></p>
+          <ul class="result-stat-chips" id="result-stat-chips" aria-label="Model snapshot for your run"></ul>
+          <nav class="result-quick-nav" aria-label="Explore your results">
+            <a class="quick-link" href="#result-why">Why me?</a>
+            <a class="quick-link" href="#result-silo">Silo</a>
+            <a class="quick-link" href="#result-hobbies">Hobbies</a>
+            <a class="quick-link" href="#result-read">Read</a>
+            <a class="quick-link" href="#insight-sections">Insights</a>
+            <a class="quick-link" href="#result-events">Events</a>
+            <a class="quick-link" href="#result-peers">Peers</a>
+            <a class="quick-link" href="#result-more">Tips</a>
+            <a class="quick-link" href="#tribe-atlas-public">Map</a>
+          </nav>
+          <div class="result-hero-actions">
+            <button type="button" class="btn-text" id="scroll-to-atlas">Jump to four-tribe map</button>
+            <button type="button" class="btn-text btn-text--secondary" id="try-another-mix">Change hobbies &amp; run again</button>
+          </div>
+        </header>
 
-        <h3 class="subhead">People to say hi to</h3>
-        <p class="hint">Anonymized ideas—same hobby overlap as conversation starters.</p>
-        <div id="peer-list" class="peer-list"></div>
+        <details class="assignment-details" id="result-why">
+          <summary class="assignment-summary">How was my tribe chosen?</summary>
+          <div id="assignment-explain-body" class="assignment-explain-body"></div>
+        </details>
+
+        <div class="result-silo-block" id="result-silo">
+          <div class="silo-row">
+            <span>Friendship concentration (silo)</span>
+            <span id="silo-label"></span>
+          </div>
+          <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
+        </div>
+
+        <div class="result-tops" id="result-hobbies">
+          <h3 class="result-section-label">Top hobbies in this tribe <span class="result-section-hint">(training cohort)</span></h3>
+          <div class="pill-list pill-list--emph" id="tribe-hobbies" aria-label="Most common hobbies in your assigned tribe"></div>
+        </div>
+
+        <aside class="rec-callout" id="result-read">
+          <h3 class="result-section-label">Quick read</h3>
+          <p class="rec-text" id="rec"></p>
+        </aside>
+
+        <div id="insight-sections" class="insight-stack" aria-label="Deeper insights"></div>
+        <p class="result-model-foot" id="result-model-foot"></p>
+
+        <section class="result-sub" id="result-events">
+          <h3 class="result-section-label">Events to try</h3>
+          <p class="hint tight">Ranked from posted campus events using your hobbies and tribe.</p>
+          <div id="event-list" class="event-list"></div>
+        </section>
+
+        <section class="result-sub" id="result-peers">
+          <h3 class="result-section-label">People to look for <span class="result-section-hint">(by shared interest)</span></h3>
+          <p class="hint tight">Illustrative profiles from the same K-Means cluster in <code>combined_with_clusters.csv</code>—conversation hooks, not real names.</p>
+          <div id="peer-list" class="peer-grid"></div>
+        </section>
+
+        <section class="result-sub result-next" id="result-more">
+          <h3 class="result-section-label">Same tribe, different faces</h3>
+          <p class="hint tight">Same cluster ID as you in the training file—broad vibe match. Use the hobby cards above for specific icebreakers.</p>
+          <p class="hint tight">Scroll down to the map: <strong>your tribe card stays outlined in rose</strong> after each run so you can compare all four at a glance.</p>
+        </section>
+      </section>
+
+      <section class="card tribe-showcase-card" id="tribe-atlas-public">
+        <h2>The 4 interest tribes at GIKI</h2>
+        <p class="hint tribe-atlas-intro" id="tribe-atlas-intro">
+          Each card is one <strong>K-Means cluster</strong> (IDs <strong>0–3</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.
+        </p>
+        <div id="public-tribe-cards" class="tribe-atlas-grid"></div>
       </section>
     </div>
 
-    <div id="panel-admin" class="panel hidden">
+    <div id="panel-guide" class="panel" role="tabpanel" aria-labelledby="tab-btn-guide">
+      <section class="card guide-hero">
+        <h1 class="guide-title">How to use GIKI-Connect</h1>
+        <p class="guide-lead">This page is your quick manual: what the project proves in the notebook, what the web app demonstrates, and how to click through without overstating the model.</p>
+      </section>
+
+      <p class="guide-interactive-hint hint">Tap a heading below to expand or collapse a section.</p>
+
+      <section class="card">
+        <details class="guide-details">
+          <summary class="guide-summary">What you are showing (proposal)</summary>
+          <div class="guide-details-inner">
+            <ul class="guide-list">
+              <li><strong>Social siloing</strong> — small circles tied to faculty / province / batch on a residential campus.</li>
+              <li><strong>Society bridge</strong> — societies and hobby mixers as the realistic way out of those bubbles.</li>
+              <li><strong>Interest tribes</strong> — K-Means groups students by <em>shared interests + society + comfort + silo</em>, not by “who looks like you” on demographics alone.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section class="card guide-honest">
+        <details class="guide-details" open>
+          <summary class="guide-summary">What the model actually uses</summary>
+          <div class="guide-details-inner">
+            <p>Every “Find my interest tribe” request builds a vector of <strong>17 features</strong> saved from <code>GIKI_Connect_Notebook.ipynb</code>:</p>
+            <ul class="guide-list">
+              <li><strong>14 hobby flags</strong> (checkboxes on the Student tab)</li>
+              <li><strong>Society hours / week</strong> (set to <strong>0</strong> automatically if you pick “Not a member”)</li>
+              <li><strong>Comfort</strong> (1–5 slider)</li>
+              <li><strong>Silo index</strong> — from your % same-province / same-faculty friends + friend count, using the same formula as the notebook (<code>p + f − p×f</code> on the proportions).</li>
+            </ul>
+            <p><strong>Not used for the tribe label today:</strong> faculty, year, and the society chips you pick. They are honest extras for your survey story; the API echoes them back as <code>submitted</code> but they do not enter <code>kmeans.predict</code>.</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="card">
+        <details class="guide-details">
+          <summary class="guide-summary">Student tab — step by step</summary>
+          <div class="guide-details-inner">
+            <ol class="guide-steps">
+              <li>Read the <strong>live stats</strong> (cohort size, K, feature count, PCA %) — they come from <code>GET /api/meta</code> and your files on disk.</li>
+              <li>Skim <strong>Project context</strong> for limits and pilot wording.</li>
+              <li>Fill <strong>Academic profile</strong> (optional for the model, useful for your report).</li>
+              <li>Set <strong>Social connectivity</strong> sliders; pick <strong>Society involvement</strong> (hours + society chips if you are a member); tick <strong>hobbies</strong>.</li>
+              <li>Scroll to <strong>The 4 interest tribes</strong> to see how the cohort splits before you run yourself.</li>
+              <li>Click <strong>Find my interest tribe</strong> — you get a <strong>Tribe ID</strong> pill, explainable “how chosen” notes, the four-card map with yours outlined, plus events and anonymized peer ideas.</li>
+            </ol>
+          </div>
+        </details>
+      </section>
+
+      <section class="card">
+        <details class="guide-details">
+          <summary class="guide-summary">GIKI admin tab</summary>
+          <div class="guide-details-inner">
+            <p>Use the default token unless you changed <code>GIKI_ADMIN_TOKEN</code>. Post title, time, place, hobby tags, and optionally <strong>target tribes (0–3)</strong> so the right students see the event first in their list. Events save to <code>data/events.json</code> locally (or <code>/tmp</code> on Vercel).</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="card">
+        <details class="guide-details">
+          <summary class="guide-summary">Notebook vs app</summary>
+          <div class="guide-details-inner">
+            <p><strong>Notebook:</strong> Chi-square, Pearson, EDA plots, elbow, K-Means fit, exports to <code>output/model/</code> and <code>combined_with_clusters.csv</code>. <strong>App:</strong> loads those pickles and CSV, runs one prediction per form submit, layers event + peer rules on top—no retraining in the browser.</p>
+          </div>
+        </details>
+      </section>
+    </div>
+
+    <div id="panel-admin" class="panel hidden" role="tabpanel" aria-labelledby="tab-btn-admin">
       <section class="card tribe-atlas">
         <h2>Interest tribes (for event targeting)</h2>
         <p class="hint">
-          Each card is one <strong>interest tribe</strong> (ID <strong>0–3</strong>) from the K-Means layer in the notebook. Optional <em>target tribes</em> prioritise those students; <strong>hobby tags</strong> alone still work for matching.
+          Each card is one <strong>interest tribe</strong> (<strong>Tribe ID 0–3</strong>) from the K-Means layer in the notebook. Optional <em>target tribes</em> prioritise those students; <strong>hobby tags</strong> alone still work for matching.
         </p>
         <div id="admin-tribe-cards" class="tribe-atlas-grid"></div>
       </section>
@@ -142,23 +302,23 @@
         <h2>Post a campus event</h2>
         <p class="hint">Admin token (demo): <code>giki-admin-demo</code> — override with env <code>GIKI_ADMIN_TOKEN</code>.</p>
         <div class="field">
-          <label>Admin token</label>
+          <label for="admin-token">Admin token</label>
           <input type="password" id="admin-token" class="text-input" value="giki-admin-demo" autocomplete="off" />
         </div>
         <div class="field">
-          <label>Event title</label>
+          <label for="ev-title">Event title</label>
           <input type="text" id="ev-title" class="text-input" placeholder="e.g. Open mic night" />
         </div>
         <div class="field">
-          <label>Date &amp; time</label>
+          <label for="ev-when">Date &amp; time</label>
           <input type="datetime-local" id="ev-when" class="text-input" />
         </div>
         <div class="field">
-          <label>Place</label>
+          <label for="ev-place">Place</label>
           <input type="text" id="ev-place" class="text-input" placeholder="Venue" />
         </div>
         <div class="field">
-          <label>Description</label>
+          <label for="ev-desc">Description</label>
           <textarea id="ev-desc" class="text-input tall" rows="3" placeholder="What to expect…"></textarea>
         </div>
         <p class="hint">Hobbies this event fits (student matching):</p>
@@ -175,8 +335,11 @@
       </section>
     </div>
 
-    <footer>
-      Fatima Tabasum (2024178) · Saadia Asghar (2024550) · BSc Data Science · Theory of Data Science · Instructor: Sir Shahab Ansari
+    <footer class="site-footer">
+      <p class="site-footer__authors">
+        Fatima Tabasum (2024178) · Saadia Asghar (2024550) · BSc Data Science · Theory of Data Science · Instructor: Sir Shahab Ansari
+      </p>
+      <p class="site-footer__note">Independent course work · not an official GIK Institute system or endorsement.</p>
     </footer>
   </div>
   <script src="/assets/app.js"></script>

@@ -41,6 +41,19 @@ jupyter notebook
 
 Run `GIKI_Connect_Notebook.ipynb` top to bottom, then restart `app_server.py`.
 
+## Deploy on Vercel
+
+1. Import repo **Saadia-Asghar/Giki-Connect**, branch **main**.  
+2. **Framework Preset:** choose **Flask** (or “Other” if Flask is not listed — Vercel still detects `app.py`).  
+3. **Root Directory:** `./`  
+4. **Environment variables (optional):** `GIKI_ADMIN_TOKEN` = your secret (otherwise default demo token is used).
+
+Vercel expects a Flask instance named **`app`** in **`app.py`** at the repo root — this repo includes that file (`from app_server import app`).
+
+Static UI lives under **`public/`** (`index.html` + `assets/`), per [Vercel’s Flask static guidance](https://vercel.com/docs/frameworks/backend/flask). The API stays on the same domain (`/api/...`).
+
+**Note:** Admin-posted events on Vercel are written under **`/tmp`** (ephemeral per serverless instance). For a real campus rollout, use a database or Vercel KV / Postgres. Cold starts load **scikit-learn** + pickles — first request can take several seconds.
+
 ## Push
 
 ```bash

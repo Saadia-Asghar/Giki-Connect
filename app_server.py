@@ -12,6 +12,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import shutil
 import socket
 import threading
 import time
@@ -24,10 +25,20 @@ import numpy as np
 from flask import Flask, jsonify, request, send_from_directory
 
 ROOT = Path(__file__).resolve().parent
-WEB = ROOT / "web"
+PUBLIC = ROOT / "public"
+ASSETS = PUBLIC / "assets"
 MODEL_DIR = ROOT / "output" / "model"
 COHORT_CSV = ROOT / "output" / "combined_with_clusters.csv"
-EVENTS_JSON = ROOT / "data" / "events.json"
+EVENTS_SEED = ROOT / "data" / "events.json"
+
+
+def events_json_path() -> Path:
+    """Vercel serverless filesystem is read-only except /tmp — store mutable events there."""
+    if os.environ.get("VERCEL", ""):
+        p = Path("/tmp") / "giki-connect" / "events.json"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        return p
+    return EVENTS_SEED
 
 # Change in production; for local demo only.
 ADMIN_TOKEN = os.environ.get("GIKI_ADMIN_TOKEN", "giki-admin-demo")
@@ -109,16 +120,21 @@ def load_cohort():
 
 
 def load_events_file() -> dict:
-    if not EVENTS_JSON.is_file():
-        EVENTS_JSON.parent.mkdir(parents=True, exist_ok=True)
-        EVENTS_JSON.write_text('{"events":[]}', encoding="utf-8")
-    with open(EVENTS_JSON, encoding="utf-8") as f:
+    path = events_json_path()
+    if not path.is_file():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if EVENTS_SEED.is_file() and path.resolve() != EVENTS_SEED.resolve():
+            shutil.copy2(EVENTS_SEED, path)
+        elif not path.is_file():
+            path.write_text('{"events":[]}', encoding="utf-8")
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
 def save_events_file(data: dict) -> None:
-    EVENTS_JSON.parent.mkdir(parents=True, exist_ok=True)
-    with open(EVENTS_JSON, "w", encoding="utf-8") as f:
+    path = events_json_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
@@ -244,12 +260,16 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
     }
 
 
-app = Flask(__name__, static_folder=str(WEB), static_url_path="/assets")
+app = Flask(
+    __name__,
+    static_folder=str(ASSETS),
+    static_url_path="/assets",
+)
 
 
 @app.get("/")
 def index():
-    return send_from_directory(WEB, "index.html")
+    return send_from_directory(str(PUBLIC), "index.html")
 
 
 @app.get("/api/tribes")
@@ -369,6 +389,16 @@ def main():
     print("=" * 56)
     print()
     app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
+
+
+def _bootstrap_model():
+    """Load pickles when the module is imported (needed for Vercel — no main() run)."""
+    if (MODEL_DIR / "kmeans.pkl").is_file():
+        load_artifacts()
+        load_cohort()
+
+
+_bootstrap_model()
 
 
 if __name__ == "__main__":

@@ -48,6 +48,10 @@
           <input type="range" id="comfort" min="1" max="5" step="1" value="4" />
         </div>
         <div class="field">
+          <label>Approx. close friends (count, survey scale) <strong id="friends_v">4</strong></label>
+          <input type="range" id="friends" min="1" max="12" step="0.5" value="4" />
+        </div>
+        <div class="field">
           <label>Close friends from <em>same province</em> (%) <strong id="same_prov_pct_v">50%</strong></label>
           <input type="range" id="same_prov_pct" min="0" max="100" step="5" value="50" />
         </div>
@@ -71,7 +75,7 @@
         </div>
         <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
         <p class="hint" style="margin-top:0.35rem">
-          Same formula as the notebook: (same-province % + same-faculty %) ÷ 200 → 0 (mixed) to 1 (same province &amp; faculty). That number is the <strong>Silo_Index</strong> feature the trained K-Means uses (with your hobbies, society hours, and comfort).
+          <strong>Silo index (report):</strong> (# close friends same province <em>or</em> same faculty) ÷ (total close friends). With only the two % sliders, we use the same estimate as the notebook: <code>p + f − p×f</code> (p,f = those % on 0–1). That <strong>Silo_Index</strong> is what K-Means uses, with your hobbies, society hours, and comfort.
         </p>
         <p class="hint" style="margin-top:0.75rem">Typical hobbies in this tribe:</p>
         <div class="pill-list" id="tribe-hobbies"></div>
@@ -91,7 +95,7 @@
       <section class="card tribe-atlas">
         <h2>What “tribes” are (for event targeting)</h2>
         <p class="hint">
-          Your notebook trained <strong>K=4</strong> clusters on hobbies + society features. Each id <strong>0–3</strong> is one interest tribe.
+          Your notebook trained <strong>K=4</strong> clusters on hobbies + society hours + comfort + report-style <strong>Silo_Index</strong>. Each id <strong>0–3</strong> is one interest tribe.
           When you publish an event, ticking <em>target tribes</em> tells the app to prioritise those students; leaving it blank still matches on <strong>hobby tags</strong> only.
         </p>
         <p class="kmeans-note" id="admin-kmeans-note"></p>

@@ -1,42 +1,42 @@
 {
   "0": {
-    "name": "Fitness & Debating",
-    "n": 44,
-    "avg_silo": 0.324,
-    "top_hobbies": [
-      "Fitness",
-      "Debating",
-      "Art"
-    ]
-  },
-  "1": {
-    "name": "Cooking & Music",
-    "n": 72,
-    "avg_silo": 0.372,
-    "top_hobbies": [
-      "Cooking",
-      "Music",
-      "Art"
-    ]
-  },
-  "2": {
-    "name": "Gaming & Reading",
-    "n": 23,
-    "avg_silo": 0.457,
-    "top_hobbies": [
-      "Gaming",
-      "Reading",
-      "Travelling"
-    ]
-  },
-  "3": {
     "name": "Skating & Music",
     "n": 9,
-    "avg_silo": 0.389,
+    "avg_silo": 0.627,
     "top_hobbies": [
       "Skating",
       "Music",
       "Cooking"
+    ]
+  },
+  "1": {
+    "name": "Art & Fitness",
+    "n": 52,
+    "avg_silo": 0.517,
+    "top_hobbies": [
+      "Art",
+      "Fitness",
+      "Debating"
+    ]
+  },
+  "2": {
+    "name": "Cooking & Music",
+    "n": 58,
+    "avg_silo": 0.628,
+    "top_hobbies": [
+      "Cooking",
+      "Music",
+      "Hiking"
+    ]
+  },
+  "3": {
+    "name": "Gaming & Music",
+    "n": 29,
+    "avg_silo": 0.713,
+    "top_hobbies": [
+      "Gaming",
+      "Music",
+      "Travelling"
     ]
   }
 }

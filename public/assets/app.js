@@ -120,6 +120,7 @@ function readSliders() {
   return {
     soc_hours: parseFloat(el("soc_hours").value),
     comfort: parseFloat(el("comfort").value),
+    friends: parseFloat(el("friends").value),
     same_prov_pct: parseFloat(el("same_prov_pct").value),
     same_fac_pct: parseFloat(el("same_fac_pct").value),
   };
@@ -129,6 +130,7 @@ function syncSliderLabels() {
   const s = readSliders();
   el("soc_hours_v").textContent = `${s.soc_hours} h/wk`;
   el("comfort_v").textContent = String(s.comfort);
+  el("friends_v").textContent = String(s.friends);
   el("same_prov_pct_v").textContent = `${Math.round(s.same_prov_pct)}%`;
   el("same_fac_pct_v").textContent = `${Math.round(s.same_fac_pct)}%`;
 }
@@ -341,7 +343,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderStudentInsight();
   renderAdminTribeAtlas();
   setupTabs();
-  ["soc_hours", "comfort", "same_prov_pct", "same_fac_pct"].forEach((id) => {
+  ["soc_hours", "comfort", "friends", "same_prov_pct", "same_fac_pct"].forEach((id) => {
     el(id).addEventListener("input", syncSliderLabels);
   });
   syncSliderLabels();

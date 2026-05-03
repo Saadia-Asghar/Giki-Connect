@@ -10,7 +10,7 @@ Campus app concept: **students** enter hobbies + social sliders → the **same K
 
 **Yes.** On each “Get tribe & suggestions” request the server:
 
-1. Builds the same feature row as the notebook (`h_*` hobby columns + `SocHours`, `ComfortScore`, **`Silo_Index`** = (same-province % + same-faculty %) ÷ 200).
+1. Builds the same feature row as the notebook (`h_*` hobby columns + `SocHours`, `ComfortScore`, **`Silo_Index`** = report silo: (friends same province **or** same faculty) ÷ total friends — from survey % we use **p + f − p×f** with p,f on 0–1; optional **friends** count defaults to 4 like the survey mapping).
 2. Runs `scaler.transform(...)` then `kmeans.predict(...)` on **`output/model/scaler.pkl`** and **`output/model/kmeans.pkl`** (joblib).
 
 Event and peer suggestions are **on top of** that prediction (rules + CSV), not a replacement for the model.

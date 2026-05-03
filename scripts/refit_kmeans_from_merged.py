@@ -38,27 +38,33 @@ HOBBIES_ALL = [
 
 def main() -> None:
     combined = pd.read_csv(MERGED)
+    # Strip any stray h_* columns if an older script version wrote them here
+    combined = combined[[c for c in combined.columns if not str(c).startswith("h_")]]
+    # Report silo: (# same-prov OR same-fac) / T ≈ p + f − p×f with p,f from % (see notebook)
+    _p = combined["SameProvince_pct"].fillna(12.5) / 100.0
+    _f = combined["SameFaculty_pct"].fillna(12.5) / 100.0
+    combined["Silo_Index"] = _p + _f - _p * _f
+    combined.to_csv(MERGED, index=False)
+
+    tr = combined.copy()
     for h in HOBBIES_ALL:
         col = f"h_{h.replace(' ', '_').replace('/', '').replace(',', '')}"
-        combined[col] = combined["Hobbies"].fillna("").apply(lambda x: 1 if h in str(x) else 0)
+        tr[col] = tr["Hobbies"].fillna("").apply(lambda x: 1 if h in str(x) else 0)
 
-    hobby_cols = [c for c in combined.columns if c.startswith("h_")]
-    combined["Silo_Index"] = (
-        combined["SameProvince_pct"].fillna(12.5) + combined["SameFaculty_pct"].fillna(12.5)
-    ) / 200
+    hobby_cols = [c for c in tr.columns if c.startswith("h_")]
     feature_cols = hobby_cols + ["SocHours", "ComfortScore", "Silo_Index"]
-    X = combined[feature_cols].fillna(0).values
+    X = tr[feature_cols].fillna(0).values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
     K = 4
     km_model = KMeans(n_clusters=K, random_state=42, n_init=20)
     km_model.fit(X_scaled)
-    combined["Cluster"] = km_model.labels_
+    tr["Cluster"] = km_model.labels_
 
     cluster_profiles: dict = {}
     for c in range(K):
-        grp = combined[combined["Cluster"] == c]
+        grp = tr[tr["Cluster"] == c]
         top_h = grp[hobby_cols].sum().sort_values(ascending=False).head(3).index.tolist()
         top_h = [h.replace("h_", "").replace("_", " ") for h in top_h]
         avg_s = grp["Silo_Index"].mean()
@@ -75,7 +81,7 @@ def main() -> None:
     joblib.dump(feature_cols, MODEL_DIR / "feature_cols.pkl")
     with open(MODEL_DIR / "cluster_profiles.json", "w", encoding="utf-8") as f:
         json.dump(cluster_profiles, f, indent=2)
-    combined.to_csv(ROOT / "output" / "combined_with_clusters.csv", index=False)
+    tr.to_csv(ROOT / "output" / "combined_with_clusters.csv", index=False)
     print("Wrote:", MODEL_DIR / "kmeans.pkl", MODEL_DIR / "scaler.pkl", MODEL_DIR / "feature_cols.pkl")
     print("Wrote:", MODEL_DIR / "cluster_profiles.json", ROOT / "output" / "combined_with_clusters.csv")
     print("feature_cols tail:", feature_cols[-4:])

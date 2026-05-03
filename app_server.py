@@ -96,6 +96,23 @@ def hobby_col(h: str) -> str:
     return f"h_{h.replace(' ', '_').replace('/', '').replace(',', '')}"
 
 
+def silo_index_from_report(friends: float, same_prov_pct: float, same_fac_pct: float) -> float:
+    """Report definition: (# close friends same province OR same faculty) / (total close friends).
+
+    Survey stores marginal % only. Estimated union count (independence for overlap):
+    n_or = T * (p + f - p*f) with p,f in [0,1]. Silo_Index = n_or / T = p + f - p*f.
+    If T <= 0, return the union fraction only.
+    """
+    p = max(0.0, min(1.0, float(same_prov_pct) / 100.0))
+    fp = max(0.0, min(1.0, float(same_fac_pct) / 100.0))
+    t = float(friends)
+    union_frac = p + fp - p * fp
+    if t <= 0:
+        return round(max(0.0, min(1.0, union_frac)), 3)
+    n_or = t * union_frac
+    return round(max(0.0, min(1.0, n_or / t)), 3)
+
+
 def load_artifacts():
     global km_model, scaler, feature_cols, cluster_profiles
     km_model = joblib.load(MODEL_DIR / "kmeans.pkl")
@@ -210,12 +227,19 @@ def tribes_payload() -> dict:
         )
     return {
         "tribes": tribes,
-        "kmeans_note": "K=4 from the notebook: four “interest tribes” learned from hobby + society hours + comfort + Silo_Index (same-province % + same-faculty %, divided by 200) after scaling. Tribe id is the cluster label (0–3).",
+        "kmeans_note": "K=4 from the notebook: four “interest tribes” learned from hobby + society hours + comfort + Silo_Index (report: share of friends same province OR same faculty; from survey % we use p+f−p·f, same as n_or/T) after scaling. Tribe id is the cluster label (0–3).",
         **CAMPUS_CONTEXT,
     }
 
 
-def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_pct: float, same_fac_pct: float):
+def predict_row(
+    hobbies: list[str],
+    soc_hours: float,
+    comfort: float,
+    same_prov_pct: float,
+    same_fac_pct: float,
+    friends: float = 4.0,
+):
     sel = set(hobbies)
     row = {}
     for h in HOBBIES:
@@ -223,8 +247,7 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
         row[key] = 1 if h in sel else 0
     row["SocHours"] = float(soc_hours)
     row["ComfortScore"] = float(comfort)
-    # Must match notebook training: one feature Silo_Index = (same_prov% + same_fac%) / 200
-    silo = round((float(same_prov_pct) + float(same_fac_pct)) / 200, 3)
+    silo = silo_index_from_report(friends, same_prov_pct, same_fac_pct)
     row["Silo_Index"] = silo
 
     X_new = np.array([[row[c] for c in feature_cols]])
@@ -256,7 +279,7 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
         "recommendation": rec,
         "suggested_peers": peers,
         "suggested_events": events,
-        "model_note": "Predictions use output/model/kmeans.pkl + scaler.pkl (same training as the notebook).",
+        "model_note": "Predictions use output/model/kmeans.pkl + scaler.pkl (same training as the notebook: Silo_Index = p + f − p×f from your % sliders; same as n_or/T with survey-style union estimate).",
     }
 
 
@@ -333,6 +356,7 @@ def api_predict():
         comfort = float(data.get("comfort", 4))
         sp = float(data.get("same_prov_pct", 50))
         sf = float(data.get("same_fac_pct", 50))
+        friends = float(data.get("friends", 4))
     except (TypeError, ValueError):
         return jsonify({"error": "invalid numeric fields"}), 400
 
@@ -340,11 +364,12 @@ def api_predict():
     comfort = max(1.0, min(comfort, 5.0))
     sp = max(0.0, min(sp, 100.0))
     sf = max(0.0, min(sf, 100.0))
+    friends = max(0.5, min(friends, 20.0))
 
     if not hobbies:
         return jsonify({"error": "Pick at least one hobby."}), 400
 
-    out = predict_row(hobbies, soc, comfort, sp, sf)
+    out = predict_row(hobbies, soc, comfort, sp, sf, friends)
     return jsonify(out)
 
 

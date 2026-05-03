@@ -65,6 +65,108 @@ h1 {
   font-size: 0.95rem;
 }
 
+.insight-card h2 {
+  color: var(--text);
+}
+
+.insight-body {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.insight-kicker {
+  font-size: 0.82rem;
+  color: var(--warn);
+  line-height: 1.45;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 10px;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.insight-h3 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin: 1.1rem 0 0.4rem;
+}
+
+.insight-list {
+  margin: 0 0 0.25rem;
+  padding-left: 1.15rem;
+}
+
+.insight-list li {
+  margin-bottom: 0.35rem;
+}
+
+.tribe-atlas h2 {
+  color: var(--text);
+}
+
+.kmeans-note {
+  font-size: 0.82rem;
+  color: var(--warn);
+  margin: 0 0 1rem;
+  line-height: 1.45;
+}
+
+.tribe-atlas-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 560px) {
+  .tribe-atlas-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.tribe-mini-card {
+  padding: 0.85rem 0.9rem;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+}
+
+.tribe-mini-id {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.tribe-mini-name {
+  margin: 0.2rem 0 0.25rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.tribe-mini-stats {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.tribe-mini-tops {
+  margin: 0.45rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.tribe-mini-guide {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+
 .tabs {
   display: flex;
   gap: 0.35rem;

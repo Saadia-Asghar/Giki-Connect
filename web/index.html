@@ -15,7 +15,7 @@
       <div>
         <div class="badge">K-Means · notebook-trained model</div>
         <h1>GIKI-Connect</h1>
-        <p class="lede">Students get an <strong>interest tribe</strong> from the saved model, then see <strong>events to attend</strong> and <strong>people to meet</strong> from your profile. Admins post campus mixers.</p>
+        <p class="lede">Students get an <strong>interest tribe</strong> from the saved model, then <strong>events</strong> and <strong>peer ideas</strong> aligned to that tribe. Admins post mixers and tick which tribes should see them first.</p>
       </div>
       <nav class="tabs" role="tablist">
         <button type="button" class="tab active" data-tab="student" role="tab" aria-selected="true">Student</button>
@@ -24,6 +24,13 @@
     </header>
 
     <div id="panel-student" class="panel">
+      <section class="card insight-card">
+        <h2>Why this exists · limits · roadmap</h2>
+        <div id="student-insight-body" class="insight-body">
+          <p class="hint">Loading campus context…</p>
+        </div>
+      </section>
+
       <section class="card">
         <h2>Your hobbies</h2>
         <p class="hint">Select all that apply (at least one).</p>
@@ -62,24 +69,34 @@
           <span id="silo-label"></span>
         </div>
         <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
-        <p class="hint" style="margin-top:0.75rem">Common hobbies in this tribe:</p>
+        <p class="hint" style="margin-top:0.75rem">Typical hobbies in this tribe:</p>
         <div class="pill-list" id="tribe-hobbies"></div>
         <div class="rec" id="rec"></div>
 
         <h3 class="subhead">Events to attend</h3>
-        <p class="hint">Posted by admin — ranked by hobby match + your tribe.</p>
+        <p class="hint">Ranked by hobby overlap + tribe match to admin posts.</p>
         <div id="event-list" class="event-list"></div>
 
         <h3 class="subhead">People to meet</h3>
-        <p class="hint">Others in the same K-Means cluster; hobby overlap shown (anonymized IDs).</p>
+        <p class="hint">Same K-Means cluster + shared hobbies (demo anonymization).</p>
         <div id="peer-list" class="peer-list"></div>
       </section>
     </div>
 
     <div id="panel-admin" class="panel hidden">
+      <section class="card tribe-atlas">
+        <h2>What “tribes” are (for event targeting)</h2>
+        <p class="hint">
+          Your notebook trained <strong>K=4</strong> clusters on hobbies + society features. Each id <strong>0–3</strong> is one interest tribe.
+          When you publish an event, ticking <em>target tribes</em> tells the app to prioritise those students; leaving it blank still matches on <strong>hobby tags</strong> only.
+        </p>
+        <p class="kmeans-note" id="admin-kmeans-note"></p>
+        <div id="admin-tribe-cards" class="tribe-atlas-grid"></div>
+      </section>
+
       <section class="card">
         <h2>Post a campus event</h2>
-        <p class="hint">Uses admin token (demo default: <code>giki-admin-demo</code> — set env <code>GIKI_ADMIN_TOKEN</code> to change).</p>
+        <p class="hint">Admin token (demo): <code>giki-admin-demo</code> — override with env <code>GIKI_ADMIN_TOKEN</code>.</p>
         <div class="field">
           <label>Admin token</label>
           <input type="password" id="admin-token" class="text-input" value="giki-admin-demo" autocomplete="off" />
@@ -100,9 +117,9 @@
           <label>Description</label>
           <textarea id="ev-desc" class="text-input tall" rows="3" placeholder="What to expect…"></textarea>
         </div>
-        <p class="hint">Hobbies this event fits (for matching students):</p>
+        <p class="hint">Hobbies this event fits (student matching):</p>
         <div class="hobby-grid" id="admin-hobby-grid"></div>
-        <p class="hint" style="margin-top:1rem">Target tribes (optional — leave empty to match hobbies only):</p>
+        <p class="hint" style="margin-top:1rem"><strong>Target tribes</strong> (optional — use the cards above as a cheat sheet):</p>
         <div class="cluster-picks" id="cluster-picks"></div>
         <button type="button" class="primary" id="admin-submit">Publish event</button>
         <p class="error" id="admin-error" role="alert"></p>
@@ -115,7 +132,7 @@
     </div>
 
     <footer>
-      Fatima Tabasum · Saadia Asghar · Theory of Data Science · model: <code>output/model/</code> · cohort: <code>output/combined_with_clusters.csv</code>
+      Fatima Tabasum · Saadia Asghar · Theory of Data Science · <code>output/model/</code> · <code>output/combined_with_clusters.csv</code>
     </footer>
   </div>
   <script src="/assets/app.js"></script>

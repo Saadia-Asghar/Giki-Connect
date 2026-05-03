@@ -15,8 +15,29 @@ const HOBBIES = [
   "Skating",
 ];
 
+const TRIBE_ACCENT = ["#2dd4bf", "#818cf8", "#f472b6", "#fbbf24"];
+
+/** @type {null | Record<string, unknown>} */
+let tribesData = null;
+
 function el(id) {
   return document.getElementById(id);
+}
+
+function escapeHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function tribeById(id) {
+  if (!tribesData?.tribes) return null;
+  return tribesData.tribes.find((t) => t.id === id) || null;
+}
+
+function tribeLabel(id) {
+  const t = tribeById(id);
+  return t ? `${id} — ${t.name}` : `Tribe ${id}`;
 }
 
 function buildHobbyGrid(containerId) {
@@ -46,11 +67,53 @@ function buildClusterPicks() {
     inp.type = "checkbox";
     inp.value = String(c);
     const sp = document.createElement("span");
-    sp.textContent = `Tribe ${c}`;
+    sp.textContent = tribeLabel(c);
     lab.appendChild(inp);
     lab.appendChild(sp);
     box.appendChild(lab);
   }
+}
+
+function renderStudentInsight() {
+  const root = el("student-insight-body");
+  if (!tribesData) {
+    root.innerHTML =
+      "<p class=\"hint\">Could not load context. Is the server running?</p>";
+    return;
+  }
+  const ul = (items) =>
+    `<ul class="insight-list">${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+  root.innerHTML = `
+    <p class="insight-kicker">${escapeHtml(tribesData.kmeans_note || "")}</p>
+    <h3 class="insight-h3">${escapeHtml(tribesData.why_title || "")}</h3>
+    ${ul(tribesData.why || [])}
+    <h3 class="insight-h3">${escapeHtml(tribesData.limits_title || "")}</h3>
+    ${ul(tribesData.limits || [])}
+    <h3 class="insight-h3">${escapeHtml(tribesData.next_title || "")}</h3>
+    ${ul(tribesData.next || [])}
+  `;
+}
+
+function renderAdminTribeAtlas() {
+  const k = el("admin-kmeans-note");
+  const grid = el("admin-tribe-cards");
+  if (!tribesData || !grid) return;
+  k.textContent = tribesData.kmeans_note || "";
+  grid.innerHTML = "";
+  (tribesData.tribes || []).forEach((t) => {
+    const card = document.createElement("article");
+    card.className = "tribe-mini-card";
+    card.style.borderLeftColor = TRIBE_ACCENT[t.id % 4] || TRIBE_ACCENT[0];
+    const tops = (t.top_hobbies || []).join(", ");
+    card.innerHTML = `
+      <div class="tribe-mini-id">Tribe ${t.id}</div>
+      <h4 class="tribe-mini-name">${escapeHtml(t.name)}</h4>
+      <p class="tribe-mini-stats">${t.n} profiles · avg silo ${t.avg_silo}</p>
+      <p class="tribe-mini-tops">Top hobbies: <strong>${escapeHtml(tops)}</strong></p>
+      <p class="tribe-mini-guide">${escapeHtml(t.admin_guide || "")}</p>
+    `;
+    grid.appendChild(card);
+  });
 }
 
 function readSliders() {
@@ -86,30 +149,28 @@ function fmtWhen(iso) {
   }
 }
 
+function formatTribeTargets(clusterIds) {
+  if (!clusterIds || !clusterIds.length) return "";
+  const parts = clusterIds.map((c) => tribeLabel(+c));
+  return ` · Targets: ${parts.join("; ")}`;
+}
+
 function renderEvents(targetEl, events) {
   const root = el(targetEl);
   root.innerHTML = "";
   if (!events || !events.length) {
     root.innerHTML =
-      '<p class="hint" style="margin:0">No events yet — admin can post one in the Admin tab.</p>';
+      '<p class="hint" style="margin:0">No events yet — post one in the Admin tab.</p>';
     return;
   }
   events.forEach((e) => {
     const div = document.createElement("div");
     div.className = "event-card";
     const tags = (e.hobby_tags || []).join(", ");
-    const cl = (e.clusters || []).length
-      ? ` · Tribes ${e.clusters.join(", ")}`
-      : "";
-    div.innerHTML = `<h4>${escapeHtml(e.title || "")}</h4><div class="meta">${escapeHtml(fmtWhen(e.when_iso))} · ${escapeHtml(e.place || "TBA")}${cl}</div><p>${escapeHtml(e.description || "")}</p><div class="meta">Tags: ${escapeHtml(tags || "—")}</div>`;
+    const cl = formatTribeTargets(e.clusters || []);
+    div.innerHTML = `<h4>${escapeHtml(e.title || "")}</h4><div class="meta">${escapeHtml(fmtWhen(e.when_iso))} · ${escapeHtml(e.place || "TBA")}${escapeHtml(cl)}</div><p>${escapeHtml(e.description || "")}</p><div class="meta">Hobby tags: ${escapeHtml(tags || "—")}</div>`;
     root.appendChild(div);
   });
-}
-
-function escapeHtml(s) {
-  const d = document.createElement("div");
-  d.textContent = s;
-  return d.innerHTML;
 }
 
 function renderPeerList(peers) {
@@ -117,14 +178,14 @@ function renderPeerList(peers) {
   root.innerHTML = "";
   if (!peers || !peers.length) {
     root.innerHTML =
-      '<p class="hint" style="margin:0">No cohort rows for this cluster (check combined_with_clusters.csv).</p>';
+      '<p class="hint" style="margin:0">No cohort rows for this cluster.</p>';
     return;
   }
   peers.forEach((p) => {
     const div = document.createElement("div");
     div.className = "peer-row";
     const shared = (p.shared_hobbies || []).join(", ") || "—";
-    div.innerHTML = `<div class="who">${escapeHtml(p.display)}</div><div class="meta">${escapeHtml(p.faculty || "")} · ${escapeHtml(p.province || "")}</div><div class="meta">${escapeHtml(p.hobbies_preview || "")}</div><div class="shared">Shared with you: ${escapeHtml(shared)} · score ${p.overlap}</div>`;
+    div.innerHTML = `<div class="who">${escapeHtml(p.display)}</div><div class="meta">${escapeHtml(p.faculty || "")} · ${escapeHtml(p.province || "")}</div><div class="meta">${escapeHtml(p.hobbies_preview || "")}</div><div class="shared">Shared with you: ${escapeHtml(shared)} · overlap ${p.overlap}</div>`;
     root.appendChild(div);
   });
 }
@@ -168,7 +229,7 @@ async function predict() {
     el("result").classList.remove("hidden");
   } catch (e) {
     err.textContent =
-      "Cannot reach the server. Run START_APP.bat or python app_server.py from the project folder.";
+      "Cannot reach the server. Run START_APP.bat or python app_server.py.";
     el("result").classList.add("hidden");
   } finally {
     btn.disabled = false;
@@ -261,10 +322,22 @@ function setupTabs() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+async function loadTribesContext() {
+  try {
+    const r = await fetch("/api/tribes");
+    if (r.ok) tribesData = await r.json();
+  } catch {
+    tribesData = null;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadTribesContext();
   buildHobbyGrid("hobby-grid");
   buildHobbyGrid("admin-hobby-grid");
   buildClusterPicks();
+  renderStudentInsight();
+  renderAdminTribeAtlas();
   setupTabs();
   ["soc_hours", "comfort", "same_prov_pct", "same_fac_pct"].forEach((id) => {
     el(id).addEventListener("input", syncSliderLabels);

@@ -51,6 +51,35 @@ HOBBIES = [
 
 _cohort: list[dict] = []
 
+# Shown in /api/tribes — helps admins map events to K-Means clusters (ids 0–3).
+TRIBE_ADMIN_GUIDE = {
+    "0": "Strong on skating, music, cooking vibes — rink outings, open-mic, potluck-style mixers.",
+    "1": "Debating, art, fitness — talks, gallery walks, gym challenges across faculties.",
+    "2": "Gaming, music, travel — LAN cafés, rhythm-game corners, trip-planning meetups.",
+    "3": "Cooking, music, hiking — food collabs, trail days, low-key acoustic hikes.",
+}
+
+CAMPUS_CONTEXT = {
+    "why_title": "Why this helps GIKI",
+    "why": [
+        "Friend groups often form by accident (same wing, same class). The model groups students by shared hobbies so mixers can be intentional, not random posters.",
+        "Admins see which interest tribes exist in the data and can aim events at overlapping tribes instead of one-size-fits-all announcements.",
+        "It connects to your analysis: silo index + societies + clusters as “interest tribes” from the survey pipeline.",
+    ],
+    "limits_title": "Honest limits (read before scaling)",
+    "limits": [
+        "Clusters are statistical — not personality labels. A student is more than one tribe.",
+        "The demo mixes real survey rows with synthetic data for ML class; production would retrain on opted-in data only and follow campus privacy rules.",
+        "Peer suggestions are anonymized demos — not a directory. Real rollout needs consent, reporting, and moderation.",
+    ],
+    "next_title": "What to build next",
+    "next": [
+        "GIKI login + roles (student / society / admin) and audit log for who posted each event.",
+        "RSVP, waitlists, and “who’s going” visible only to attendees; post-event feedback to improve matching.",
+        "Retrain on fresh semesters; track if silo index drops for attendees vs non-attendees.",
+    ],
+}
+
 
 def hobby_col(h: str) -> str:
     return f"h_{h.replace(' ', '_').replace('/', '').replace(',', '')}"
@@ -145,6 +174,31 @@ def suggest_events(cluster: int, hobbies: list[str]) -> list[dict]:
     return picked
 
 
+def tribes_payload() -> dict:
+    """Single payload for UI: tribe atlas + campus narrative (cluster_profiles loaded)."""
+    tribes = []
+    for key in sorted(cluster_profiles.keys(), key=lambda x: int(x)):
+        p = cluster_profiles[key]
+        tribes.append(
+            {
+                "id": int(key),
+                "name": p["name"],
+                "n": p["n"],
+                "avg_silo": p["avg_silo"],
+                "top_hobbies": p["top_hobbies"],
+                "admin_guide": TRIBE_ADMIN_GUIDE.get(
+                    str(key),
+                    "Match event hobbies to this tribe’s top interests.",
+                ),
+            }
+        )
+    return {
+        "tribes": tribes,
+        "kmeans_note": "K=4 from the notebook: four “interest tribes” learned from hobby + society features after scaling. Tribe id is the cluster label (0–3).",
+        **CAMPUS_CONTEXT,
+    }
+
+
 def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_pct: float, same_fac_pct: float):
     sel = set(hobbies)
     row = {}
@@ -196,6 +250,12 @@ app = Flask(__name__, static_folder=str(WEB), static_url_path="/assets")
 @app.get("/")
 def index():
     return send_from_directory(WEB, "index.html")
+
+
+@app.get("/api/tribes")
+def api_tribes():
+    """Tribe definitions + campus narrative for student insight and admin event targeting."""
+    return jsonify(tribes_payload())
 
 
 @app.get("/api/events")

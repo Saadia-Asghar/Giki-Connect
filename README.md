@@ -27,10 +27,10 @@ Or double-click **`START_APP.bat`**. Leave the console open while you use the ap
 
 ## Admin events
 
-1. Open the app → **GIKI admin** tab.  
-2. Default token: **`giki-admin-demo`** (header `X-Admin-Token`; override with env **`GIKI_ADMIN_TOKEN`**).  
-3. Fill title, date/time, place, description, hobby tags, optional target tribes → **Publish event**.  
-4. Events are stored in **`data/events.json`** (seed events included).
+1. Open the app → **GIKI admin** tab — read **“What tribes are”** (four K-Means clusters, ids **0–3**, names from `cluster_profiles.json`).  
+2. Default token: **`giki-admin-demo`** (override with env **`GIKI_ADMIN_TOKEN`**).  
+3. Post title, time, place, description, **hobby tags**, and optionally **target tribes** so the right students see the event first.  
+4. Events live in **`data/events.json`**. API: `GET /api/tribes` returns tribe atlas + campus “why / limits / roadmap” copy for the UI.
 
 ## Jupyter (retrain / refresh pickles)
 

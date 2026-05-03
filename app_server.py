@@ -75,7 +75,7 @@ CAMPUS_CONTEXT = {
     "why": [
         "GIKI is a residential campus, but many students still sit in small circles tied to faculty, province, or batch.",
         "Societies and hobby spaces are the usual “bridge” out of those bubbles—shared interests before shared demographics.",
-        "This screen nudges you toward mixers and people who overlap what you like, so connections can be a bit more intentional.",
+        "Treat the suggestions like a curated bulletin—pick what fits your week; they are hints, not a verdict on your social life.",
     ],
     "limits_title": "Keep in mind",
     "limits": [
@@ -85,9 +85,9 @@ CAMPUS_CONTEXT = {
     ],
     "next_title": "Worth trying next",
     "next": [
-        "Go to one cross-faculty mixer or society intro night with a wing-mate from another department.",
-        "Pick an event below and commit to saying hello to two people you do not already sit with in class.",
-        "If you are in a society, invite someone who is not—especially international or junior-year students who often feel on the edge of cliques.",
+        "Pick one event below and aim to greet two people you do not already hang out with.",
+        "If you are not in a society yet, try one intro or taster session this month—it is the fastest on-campus bridge between faculties.",
+        "If you already are in a society, bring one friend who is not; international and junior-year students often benefit most from that invite.",
     ],
 }
 
@@ -227,7 +227,7 @@ def tribes_payload() -> dict:
         )
     return {
         "tribes": tribes,
-        "kmeans_note": "Four interest tribes (IDs 0–3). Tick them when posting so the right students see your event first; optional if hobby tags already match.",
+        "kmeans_note": "",
         **CAMPUS_CONTEXT,
     }
 

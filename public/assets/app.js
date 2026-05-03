@@ -94,10 +94,8 @@ function renderStudentInsight() {
 }
 
 function renderAdminTribeAtlas() {
-  const k = el("admin-kmeans-note");
   const grid = el("admin-tribe-cards");
   if (!tribesData || !grid) return;
-  k.textContent = tribesData.kmeans_note || "";
   grid.innerHTML = "";
   (tribesData.tribes || []).forEach((t) => {
     const card = document.createElement("article");

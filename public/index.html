@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GIKI-Connect — Interest tribes & campus mixers</title>
+  <title>GIKI-Connect — Social siloing &amp; society bridge</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
@@ -15,7 +15,7 @@
       <div>
         <div class="badge">Theory of Data Science · GIKI</div>
         <h1>GIKI-Connect</h1>
-        <p class="lede"><strong>Analyzing social siloing and the “society bridge”</strong> on a residential campus—shared interests first. Students see mixers and people to say hi to; admins publish events for the right crowds.</p>
+        <p class="lede">Residential campus, small friendship circles, <strong>societies as the bridge</strong>—this demo turns survey-style inputs into <strong>interest-tribe</strong> suggestions (events + who to say hi to). Admins post real mixers using tribe IDs and hobby tags.</p>
       </div>
       <nav class="tabs" role="tablist">
         <button type="button" class="tab active" data-tab="student" role="tab" aria-selected="true">Student</button>
@@ -25,7 +25,7 @@
 
     <div id="panel-student" class="panel">
       <section class="card insight-card">
-        <h2>Campus context</h2>
+        <h2>Project context</h2>
         <div id="student-insight-body" class="insight-body">
           <p class="hint">Loading…</p>
         </div>
@@ -71,7 +71,7 @@
           <span id="silo-label"></span>
         </div>
         <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
-        <p class="hint" style="margin-top:0.75rem">You may also like these hobbies in your interest circle:</p>
+        <p class="hint" style="margin-top:0.75rem">Typical hobbies others in this interest tribe share (from the analysis sample):</p>
         <div class="pill-list" id="tribe-hobbies"></div>
         <div class="rec" id="rec"></div>
 
@@ -89,9 +89,8 @@
       <section class="card tribe-atlas">
         <h2>Interest tribes (for event targeting)</h2>
         <p class="hint">
-          Each card is one <strong>interest tribe</strong> (ID <strong>0–3</strong>). When you publish an event, optional <em>target tribes</em> help the right students see it first; you can also rely on <strong>hobby tags</strong> alone.
+          Each card is one <strong>interest tribe</strong> (ID <strong>0–3</strong>) from the K-Means layer in the notebook. Optional <em>target tribes</em> prioritise those students; <strong>hobby tags</strong> alone still work for matching.
         </p>
-        <p class="kmeans-note" id="admin-kmeans-note"></p>
         <div id="admin-tribe-cards" class="tribe-atlas-grid"></div>
       </section>
 

@@ -1,8 +1,11 @@
 # GIKI-Connect
 
-**Project:** *Analyzing social siloing and the “society bridge” in a residential campus* (Theory of Data Science). The web app gives students **suggestions**—mixers and anonymized “say hi to” ideas—while **GIKI admin** posts events (`data/events.json`). Under the hood it uses the same **K-Means + scaler** artifacts as `GIKI_Connect_Notebook.ipynb` and cohort rows in `output/combined_with_clusters.csv`.
+**Analyzing social siloing and the “society bridge” in a residential campus** · Theory of Data Science · Fatima Tabasum (2024178) · Saadia Asghar (2024550) · Instructor: Sir Shahab Ansari
 
-**Authors:** Fatima Tabasum (2024178), Saadia Asghar (2024550) · Theory of Data Science · Instructor: Sir Shahab Ansari
+| Piece | What it shows |
+| --- | --- |
+| **`GIKI_Connect_Notebook.ipynb`** | Chi-square (society membership × silo band); Pearson (society hours vs silo); **K-Means** interest tribes; figures + pickles in `output/model/`. |
+| **Web app** | Student **suggestions** (events + anonymized “say hi” ideas); **GIKI admin** posts mixers in `data/events.json` using tribe IDs + hobby tags—same tribe assignment as the notebook. |
 
 **GitHub:** [Saadia-Asghar/Giki-Connect](https://github.com/Saadia-Asghar/Giki-Connect)
 
@@ -27,10 +30,10 @@ Or double-click **`START_APP.bat`**. Leave the console open while you use the ap
 
 ## Admin events
 
-1. Open the app → **GIKI admin** tab — read **“What tribes are”** (four K-Means clusters, ids **0–3**, names from `cluster_profiles.json`).  
+1. Open the app → **GIKI admin** tab — use **Interest tribes** (ids **0–3**, names from `cluster_profiles.json`) when posting.  
 2. Default token: **`giki-admin-demo`** (override with env **`GIKI_ADMIN_TOKEN`**).  
 3. Post title, time, place, description, **hobby tags**, and optionally **target tribes** so the right students see the event first.  
-4. Events live in **`data/events.json`**. API: `GET /api/tribes` returns tribe atlas + campus “why / limits / roadmap” copy for the UI.
+4. Events live in **`data/events.json`**. `GET /api/tribes` feeds the tribe cards + short “project context” copy on the student tab.
 
 ## Jupyter (retrain / refresh pickles)
 

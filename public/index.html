@@ -63,12 +63,16 @@
         <h2>Your tribe (from trained model)</h2>
         <p class="result-tribe" id="tribe-title"></p>
         <p class="result-meta" id="tribe-meta"></p>
+        <p class="result-meta hint" id="tribe-cohort-silo"></p>
         <p class="model-note" id="model-note"></p>
         <div class="silo-row">
-          <span>Friendship concentration (Silo index)</span>
+          <span>Your silo index (from your sliders)</span>
           <span id="silo-label"></span>
         </div>
         <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
+        <p class="hint" style="margin-top:0.35rem">
+          Same formula as the notebook: (same-province % + same-faculty %) ÷ 200 → 0 (mixed) to 1 (same province &amp; faculty).
+        </p>
         <p class="hint" style="margin-top:0.75rem">Typical hobbies in this tribe:</p>
         <div class="pill-list" id="tribe-hobbies"></div>
         <div class="rec" id="rec"></div>

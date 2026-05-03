@@ -108,7 +108,7 @@ function renderAdminTribeAtlas() {
     card.innerHTML = `
       <div class="tribe-mini-id">Tribe ${t.id}</div>
       <h4 class="tribe-mini-name">${escapeHtml(t.name)}</h4>
-      <p class="tribe-mini-stats">${t.n} profiles · avg silo ${t.avg_silo}</p>
+      <p class="tribe-mini-stats">${t.n} profiles · cohort avg silo ${t.avg_silo}</p>
       <p class="tribe-mini-tops">Top hobbies: <strong>${escapeHtml(tops)}</strong></p>
       <p class="tribe-mini-guide">${escapeHtml(t.admin_guide || "")}</p>
     `;
@@ -212,9 +212,11 @@ async function predict() {
       return;
     }
     el("tribe-title").textContent = `Tribe ${data.cluster} — ${data.tribe_name}`;
-    el("tribe-meta").textContent = `About ${data.tribe_size} similar profiles in the training set · avg silo in tribe ${data.tribe_avg_silo}`;
+    el("tribe-meta").textContent = `About ${data.tribe_size} profiles in the training data map to this tribe (same K-Means cluster for your inputs).`;
+    const cohortSilo = el("tribe-cohort-silo");
+    cohortSilo.textContent = `In that training group, average silo index was ${data.tribe_avg_silo} — compare to your value below (that average is not calculated from your sliders).`;
     el("model-note").textContent = data.model_note || "";
-    el("silo-fill").style.width = `${Math.min(100, data.silo_index * 100)}%`;
+    el("silo-fill").style.width = `${Math.min(100, Number(data.silo_index) * 100)}%`;
     el("silo-label").textContent = `${data.silo_index} — ${data.silo_label}`;
     const pills = el("tribe-hobbies");
     pills.innerHTML = "";

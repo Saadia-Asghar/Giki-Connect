@@ -229,6 +229,7 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
     X_new = np.array([[row[c] for c in feature_cols]])
     X_sc = scaler.transform(X_new)
     cluster = int(km_model.predict(X_sc)[0])
+    # Silo_Index in notebook: ((sp_pct + sf_pct) / 2) / 100 == (sp + sf) / 200, range 0–1
     silo = round((same_prov_pct + same_fac_pct) / 200, 3)
     if silo < 0.25:
         silo_lbl = "Low (diverse)"

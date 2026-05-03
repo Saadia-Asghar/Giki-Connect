@@ -44,11 +44,11 @@ Run `GIKI_Connect_Notebook.ipynb` top to bottom, then restart `app_server.py`.
 ## Deploy on Vercel
 
 1. Import repo **Saadia-Asghar/Giki-Connect**, branch **main**.  
-2. **Framework Preset:** choose **Flask** (or “Other” if Flask is not listed — Vercel still detects `app.py`).  
+2. **Framework Preset:** choose **Flask** (or “Other” if Flask is not listed).  
 3. **Root Directory:** `./`  
 4. **Environment variables (optional):** `GIKI_ADMIN_TOKEN` = your secret (otherwise default demo token is used).
 
-Vercel expects a Flask instance named **`app`** in **`app.py`** at the repo root — this repo includes that file (`from app_server import app`).
+Production routing follows [Vercel’s Flask 3 example](https://github.com/vercel/examples/tree/main/python/flask3): **`vercel.json`** rewrites every path to **`/api/index`**, and **`api/index.py`** exposes the Flask instance **`app`** (`from app_server import app`). Root **`app.py`** is kept as a thin re-export for tools that look for it; the live deployment uses **`api/index.py`**.
 
 Static UI lives under **`public/`** (`index.html` + `assets/`), per [Vercel’s Flask static guidance](https://vercel.com/docs/frameworks/backend/flask). The API stays on the same domain (`/api/...`).
 

@@ -417,6 +417,8 @@ async function predict() {
     if (!r.ok) {
       err.textContent = data.error || "Request failed";
       el("result").classList.add("hidden");
+      const provErr = el("result-provenance");
+      if (provErr) provErr.textContent = "";
       setResultsJumpAvailable(false);
       setAtlasIntro(ATLAS_INTRO_DEFAULT);
       return;
@@ -431,8 +433,13 @@ async function predict() {
       );
     }
     el("tribe-title").textContent = data.tribe_name;
-    el("result-kicker").textContent = "You are in this tribe";
-    el("result-tagline").textContent = `K-Means assigned you to cluster ${data.cluster} (of ${k} total). The name and stats match output/model/cluster_profiles.json — the same labels as in GIKI_Connect_Notebook.`;
+    el("result-kicker").textContent = "Your match";
+    el("result-tagline").textContent = `Tribe ID ${data.cluster} of ${k}. Next: hobbies in this cluster, then events and people picked for you.`;
+    const prov = el("result-provenance");
+    if (prov) {
+      prov.textContent =
+        `Tribe names and cohort stats come from output/model/cluster_profiles.json — the same export as GIKI_Connect_Notebook.`;
+    }
     renderResultStatChips(data);
     el("silo-fill").style.width = `${Math.min(100, Number(data.silo_index) * 100)}%`;
     el("silo-label").textContent = `${data.silo_index} — ${data.silo_label}`;
@@ -469,6 +476,8 @@ async function predict() {
     err.textContent =
       "Cannot reach the server. Run START_APP.bat or python app_server.py.";
     el("result").classList.add("hidden");
+    const provCatch = el("result-provenance");
+    if (provCatch) provCatch.textContent = "";
     setResultsJumpAvailable(false);
     setAtlasIntro(ATLAS_INTRO_DEFAULT);
   } finally {

@@ -990,6 +990,7 @@ button.primary:disabled {
 .assignment-details {
   margin: 0;
   padding: 0.85rem 1.2rem 0.5rem;
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -1109,6 +1110,7 @@ button.primary:disabled {
 .rec-callout,
 .insight-stack,
 .result-sub,
+.result-provenance,
 .result-model-foot {
   padding-left: 1.2rem;
   padding-right: 1.2rem;
@@ -1117,10 +1119,25 @@ button.primary:disabled {
 .result-silo-block {
   padding-top: 1rem;
   padding-bottom: 0.25rem;
+  border-top: 1px solid var(--border);
 }
 
 .result-tops {
   padding-top: 1rem;
+}
+
+.result-tops--lead {
+  padding-top: 0.9rem;
+}
+
+.result-provenance {
+  margin: 0;
+  padding-top: 0.5rem;
+  padding-bottom: 0.35rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.45;
+  border-top: 1px dashed rgba(110, 26, 53, 0.12);
 }
 
 .result-section-label {

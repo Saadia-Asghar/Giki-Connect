@@ -130,7 +130,7 @@
         <div class="hobby-grid" id="hobby-grid" role="group" aria-label="Hobbies and interests — pick at least one for the model"></div>
         <div class="action-cta">
           <button type="button" class="primary" id="submit">Find my interest tribe</button>
-          <p class="action-cta__note">Results open below with your tribe ID, how it was chosen, events, and sample peers.</p>
+          <p class="action-cta__note">Results open below: <strong>your tribe, matched events, and peers</strong> first; explanations and tips follow.</p>
           <p class="error" id="error" role="alert"></p>
         </div>
       </section>
@@ -147,13 +147,13 @@
           <p class="result-tagline" id="result-tagline"></p>
           <ul class="result-stat-chips" id="result-stat-chips" aria-label="Model snapshot for your run"></ul>
           <nav class="result-quick-nav" aria-label="Explore your results">
-            <a class="quick-link" href="#result-why">Why me?</a>
-            <a class="quick-link" href="#result-silo">Silo</a>
             <a class="quick-link" href="#result-hobbies">Hobbies</a>
-            <a class="quick-link" href="#result-read">Read</a>
-            <a class="quick-link" href="#insight-sections">Insights</a>
             <a class="quick-link" href="#result-events">Events</a>
             <a class="quick-link" href="#result-peers">Peers</a>
+            <a class="quick-link" href="#result-silo">Silo</a>
+            <a class="quick-link" href="#result-why">Why me?</a>
+            <a class="quick-link" href="#result-read">Read</a>
+            <a class="quick-link" href="#insight-sections">Insights</a>
             <a class="quick-link" href="#result-more">Tips</a>
             <a class="quick-link" href="#tribe-atlas-public">Map</a>
           </nav>
@@ -163,10 +163,22 @@
           </div>
         </header>
 
-        <details class="assignment-details" id="result-why">
-          <summary class="assignment-summary">How was my tribe chosen?</summary>
-          <div id="assignment-explain-body" class="assignment-explain-body"></div>
-        </details>
+        <div class="result-tops result-tops--lead" id="result-hobbies">
+          <h3 class="result-section-label">Top hobbies in this tribe <span class="result-section-hint">(training cohort)</span></h3>
+          <div class="pill-list pill-list--emph" id="tribe-hobbies" aria-label="Most common hobbies in your assigned tribe"></div>
+        </div>
+
+        <section class="result-sub result-sub--match" id="result-events">
+          <h3 class="result-section-label">Matched events for you</h3>
+          <p class="hint tight">Ranked from posted campus events using your hobbies and tribe.</p>
+          <div id="event-list" class="event-list"></div>
+        </section>
+
+        <section class="result-sub result-sub--match" id="result-peers">
+          <h3 class="result-section-label">People to look for <span class="result-section-hint">(by shared interest)</span></h3>
+          <p class="hint tight">Illustrative profiles from the same K-Means cluster in <code>combined_with_clusters.csv</code>—conversation hooks, not real names.</p>
+          <div id="peer-list" class="peer-grid"></div>
+        </section>
 
         <div class="result-silo-block" id="result-silo">
           <div class="silo-row">
@@ -176,36 +188,26 @@
           <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
         </div>
 
-        <div class="result-tops" id="result-hobbies">
-          <h3 class="result-section-label">Top hobbies in this tribe <span class="result-section-hint">(training cohort)</span></h3>
-          <div class="pill-list pill-list--emph" id="tribe-hobbies" aria-label="Most common hobbies in your assigned tribe"></div>
-        </div>
+        <details class="assignment-details" id="result-why">
+          <summary class="assignment-summary">How was my tribe chosen?</summary>
+          <div id="assignment-explain-body" class="assignment-explain-body"></div>
+        </details>
 
         <aside class="rec-callout" id="result-read">
-          <h3 class="result-section-label">Quick read</h3>
+          <h3 class="result-section-label">Suggestions — try this</h3>
           <p class="rec-text" id="rec"></p>
         </aside>
 
-        <div id="insight-sections" class="insight-stack" aria-label="Deeper insights"></div>
-        <p class="result-model-foot" id="result-model-foot"></p>
-
-        <section class="result-sub" id="result-events">
-          <h3 class="result-section-label">Events to try</h3>
-          <p class="hint tight">Ranked from posted campus events using your hobbies and tribe.</p>
-          <div id="event-list" class="event-list"></div>
-        </section>
-
-        <section class="result-sub" id="result-peers">
-          <h3 class="result-section-label">People to look for <span class="result-section-hint">(by shared interest)</span></h3>
-          <p class="hint tight">Illustrative profiles from the same K-Means cluster in <code>combined_with_clusters.csv</code>—conversation hooks, not real names.</p>
-          <div id="peer-list" class="peer-grid"></div>
-        </section>
+        <div id="insight-sections" class="insight-stack" aria-label="Deeper ideas and next steps"></div>
 
         <section class="result-sub result-next" id="result-more">
           <h3 class="result-section-label">Same tribe, different faces</h3>
-          <p class="hint tight">Same cluster ID as you in the training file—broad vibe match. Use the hobby cards above for specific icebreakers.</p>
+          <p class="hint tight">Same cluster ID as you in the training file—broad vibe match. Use the hobby matches above for specific icebreakers.</p>
           <p class="hint tight">Scroll down to the map: <strong>your tribe card stays outlined in rose</strong> after each run so you can compare all four at a glance.</p>
         </section>
+
+        <p class="result-provenance" id="result-provenance"></p>
+        <p class="result-model-foot" id="result-model-foot"></p>
       </section>
 
       <section class="card tribe-showcase-card" id="tribe-atlas-public">

@@ -10,7 +10,7 @@ Campus app concept: **students** enter hobbies + social sliders → the **same K
 
 **Yes.** On each “Get tribe & suggestions” request the server:
 
-1. Builds the same feature row as the notebook (`h_*` hobby columns + `SocHours`, `ComfortScore`, `SameProvince_pct`, `SameFaculty_pct`).
+1. Builds the same feature row as the notebook (`h_*` hobby columns + `SocHours`, `ComfortScore`, **`Silo_Index`** = (same-province % + same-faculty %) ÷ 200).
 2. Runs `scaler.transform(...)` then `kmeans.predict(...)` on **`output/model/scaler.pkl`** and **`output/model/kmeans.pkl`** (joblib).
 
 Event and peer suggestions are **on top of** that prediction (rules + CSV), not a replacement for the model.
@@ -40,6 +40,10 @@ jupyter notebook
 ```
 
 Run `GIKI_Connect_Notebook.ipynb` top to bottom, then restart `app_server.py`.
+
+If you only changed how **K-Means features** are defined but already have `output/merged_dataset.csv`, you can refresh pickles + `combined_with_clusters.csv` with:
+
+`python scripts/refit_kmeans_from_merged.py`
 
 ## Deploy on Vercel
 

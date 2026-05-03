@@ -210,7 +210,7 @@ def tribes_payload() -> dict:
         )
     return {
         "tribes": tribes,
-        "kmeans_note": "K=4 from the notebook: four “interest tribes” learned from hobby + society features after scaling. Tribe id is the cluster label (0–3).",
+        "kmeans_note": "K=4 from the notebook: four “interest tribes” learned from hobby + society hours + comfort + Silo_Index (same-province % + same-faculty %, divided by 200) after scaling. Tribe id is the cluster label (0–3).",
         **CAMPUS_CONTEXT,
     }
 
@@ -223,14 +223,13 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
         row[key] = 1 if h in sel else 0
     row["SocHours"] = float(soc_hours)
     row["ComfortScore"] = float(comfort)
-    row["SameProvince_pct"] = float(same_prov_pct)
-    row["SameFaculty_pct"] = float(same_fac_pct)
+    # Must match notebook training: one feature Silo_Index = (same_prov% + same_fac%) / 200
+    silo = round((float(same_prov_pct) + float(same_fac_pct)) / 200, 3)
+    row["Silo_Index"] = silo
 
     X_new = np.array([[row[c] for c in feature_cols]])
     X_sc = scaler.transform(X_new)
     cluster = int(km_model.predict(X_sc)[0])
-    # Silo_Index in notebook: ((sp_pct + sf_pct) / 2) / 100 == (sp + sf) / 200, range 0–1
-    silo = round((same_prov_pct + same_fac_pct) / 200, 3)
     if silo < 0.25:
         silo_lbl = "Low (diverse)"
     elif silo < 0.5:

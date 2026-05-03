@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GIKI-Connect — Project Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f3ed;
+      --bg-card: #fffefb;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --accent: #0f766e;
+      --accent-soft: rgba(15, 118, 110, 0.12);
+      --border: #e7e2d9;
+      --shadow: 0 4px 24px rgba(28, 25, 23, 0.06);
+      --radius: 14px;
+      --max: 720px;
+      --nav-w: 200px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Source Sans 3", system-ui, sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--ink);
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 120% 80% at 100% -20%, rgba(15, 118, 110, 0.08), transparent),
+        radial-gradient(ellipse 80% 50% at 0% 100%, rgba(120, 53, 15, 0.06), transparent);
+      min-height: 100vh;
+    }
+
+    h1, h2, h3 {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      max-width: calc(var(--max) + var(--nav-w) + 4rem);
+      margin: 0 auto;
+      padding: 1.25rem;
+      gap: 2rem;
+    }
+
+    @media (min-width: 900px) {
+      .layout {
+        grid-template-columns: var(--nav-w) 1fr;
+        align-items: start;
+        padding: 2rem 2.5rem 4rem;
+      }
+    }
+
+    nav {
+      position: sticky;
+      top: 1.25rem;
+      align-self: start;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    @media (min-width: 900px) {
+      nav ul {
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+    }
+
+    nav a {
+      display: block;
+      padding: 0.45rem 0.65rem;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    nav a:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .hero {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(1.65rem, 4vw, 2.35rem);
+      margin: 0 0 0.75rem;
+      color: var(--ink);
+    }
+
+    .hero .subtitle {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin: 0 0 1.5rem;
+      max-width: 38ch;
+    }
+
+    .meta {
+      display: grid;
+      gap: 0.35rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .meta strong { color: var(--ink); }
+
+    section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.5rem 1.65rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    section h2 {
+      font-size: 1.35rem;
+      margin: 0 0 1rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    section h2 span.num {
+      font-family: "Source Sans 3", sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--accent);
+      color: #fff;
+      width: 1.65rem;
+      height: 1.65rem;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    section p { margin: 0 0 1rem; }
+    section p:last-child { margin-bottom: 0; }
+
+    ul.points {
+      margin: 0.5rem 0 0;
+      padding-left: 1.2rem;
+      color: var(--ink);
+    }
+
+    ul.points li { margin-bottom: 0.5rem; }
+    ul.points li:last-child { margin-bottom: 0; }
+
+    .callout {
+      background: linear-gradient(135deg, var(--accent-soft), transparent);
+      border-left: 4px solid var(--accent);
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.98rem;
+    }
+
+    .hypothesis {
+      margin: 0.75rem 0;
+      padding: 0.75rem 1rem;
+      background: #faf7f2;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .hypothesis dt {
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 0.5rem;
+    }
+
+    .hypothesis dt:first-child { margin-top: 0; }
+    .hypothesis dd { margin: 0.2rem 0 0 0; padding: 0; }
+
+    .outputs {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .outputs figure {
+      margin: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #f0ebe3;
+    }
+
+    .outputs figcaption {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: var(--bg-card);
+    }
+
+    .outputs img {
+      width: 100%;
+      height: auto;
+      display: block;
+      vertical-align: middle;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 2rem 1rem 3rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav aria-label="Sections">
+      <ul>
+        <li><a href="#top">Cover</a></li>
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#data">Data</a></li>
+        <li><a href="#preprocess">Preprocessing</a></li>
+        <li><a href="#models">Models</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+        <li><a href="#outputs">Figures</a></li>
+      </ul>
+    </nav>
+
+    <main id="top">
+      <header class="hero">
+        <span class="tag">Theory of Data Science · BSc Data Science</span>
+        <h1>GIKI-Connect: Analyzing Social Siloing and the &ldquo;Society Bridge&rdquo; in a Residential Campus</h1>
+        <p class="subtitle">Quantifying micro-silos, testing whether societies bridge diversity, and clustering students by shared interests instead of demographics.</p>
+        <div class="meta">
+          <div><strong>Fatima Tabasum</strong> (2024178) · <strong>Saadia Asghar</strong> (2024550)</div>
+          <div>Instructor: <strong>Sir Shahab Ansari</strong></div>
+          <div>Companion analysis: <code>GIKI_Connect_Notebook.ipynb</code> · Survey: <code>GIKI_Connect_Data.xlsx</code></div>
+        </div>
+      </header>
+
+      <section id="problem">
+        <h2><span class="num">1</span> Problem statement</h2>
+        <p>GIKI is a premier residential campus with a diverse student body drawn from many regions of Pakistan. A recurring social pattern is <strong>social siloing</strong>: many students stay inside small &ldquo;micro-silos&rdquo; of roughly three to four close friends, often aligned with faculty, province, hometown, or batch, despite living in close proximity.</p>
+        <p>This project uses data science to:</p>
+        <ul class="points">
+          <li><strong>Quantify</strong> isolation and surface barriers (language, faculty, seniority).</li>
+          <li><strong>Evaluate the society factor</strong> — whether GIKI&rsquo;s society culture measurably bridges those silos.</li>
+          <li><strong>Model a direction for action</strong> — machine learning to surface affinity-based &ldquo;optimized social connections&rdquo; from shared interests rather than demographics alone.</li>
+        </ul>
+      </section>
+
+      <section id="data">
+        <h2><span class="num">2</span> Data collection strategy</h2>
+        <p>Primary data comes from a structured digital survey distributed across GIKI hostels. Planned fields include:</p>
+        <ul class="points">
+          <li><strong>Demographics:</strong> faculty (CS, ME, EE, etc.), hometown or nationality, year of study.</li>
+          <li><strong>Society variables:</strong> membership (yes/no), named societies (e.g. SOP, GMS, ACM), and involvement (hours per week).</li>
+          <li><strong>Social connectivity:</strong> number of close friends, share of friends outside own faculty, cross-batch interaction frequency.</li>
+          <li><strong>Interest vectors:</strong> a checklist of hobbies (gaming, hiking, coding, photography, cricket, and similar) to capture &ldquo;deep&rdquo; similarity for clustering.</li>
+        </ul>
+      </section>
+
+      <section id="preprocess">
+        <h2><span class="num">3</span> Data preprocessing</h2>
+        <ul class="points">
+          <li><strong>One-hot encoding</strong> of categorical fields (faculties, cities, societies) into numeric indicators.</li>
+          <li><strong>Feature engineering — Silo Index:</strong> a compact measure of how concentrated friendships are in same faculty or province (implemented in the notebook from survey range bands).</li>
+          <li><strong>Normalization / scaling</strong> of numeric inputs (e.g. society hours) so features contribute fairly in distance-based models.</li>
+          <li><strong>Imputation</strong> for missing responses using sensible defaults or means where appropriate.</li>
+        </ul>
+        <p class="callout">The notebook augments limited real responses with synthetic rows drawn from the same empirical distributions so K-Means has enough samples — all synthetic IDs are clearly anonymized (e.g. <code>ANON-YYYYXXX</code>).</p>
+      </section>
+
+      <section id="models">
+        <h2><span class="num">4</span> Model development</h2>
+        <p>Two statistical tests frame the silo question before the machine-learning layer.</p>
+
+        <h3 style="font-size:1.1rem;margin:1.25rem 0 0.5rem;">Chi-square test of independence</h3>
+        <p>Tests whether society membership (yes/no) and a diversity-related split (high/low silo) are associated beyond chance.</p>
+        <dl class="hypothesis">
+          <dt>H₀</dt>
+          <dd>Society membership has no association with social diversity.</dd>
+          <dt>H₁</dt>
+          <dd>Society membership is associated with greater social diversity.</dd>
+          <dt>Decision rule</dt>
+          <dd>If <em>p</em> &lt; 0.05, reject H₀ and treat the association as statistically meaningful.</dd>
+        </dl>
+        <p>An extended view can repeat similar tests by society name to see which organizations behave as bridges versus new silos.</p>
+
+        <h3 style="font-size:1.1rem;margin:1.25rem 0 0.5rem;">Pearson correlation</h3>
+        <p>Correlates <strong>society involvement hours</strong> (numeric) with the <strong>Silo Index</strong> (numeric). A <strong>negative</strong> correlation supports the story that more society time aligns with lower siloing, holding linearity assumptions in mind.</p>
+
+        <h3 style="font-size:1.1rem;margin:1.25rem 0 0.5rem;">K-means clustering — solution layer</h3>
+        <ul class="points">
+          <li><strong>Input:</strong> high-dimensional vectors from hobbies and related features.</li>
+          <li><strong>Idea:</strong> cluster on &ldquo;deep&rdquo; similarity (interests) rather than surface demographics.</li>
+          <li><strong>Output:</strong> <strong>Interest tribes</strong> — e.g. students from different years or regions who cluster on shared passions.</li>
+        </ul>
+      </section>
+
+      <section id="results">
+        <h2><span class="num">5</span> Results and discussion</h2>
+        <ul class="points">
+          <li><strong>Network-style narrative:</strong> contrast tight clumps among non-members with society members as connectors across faculties.</li>
+          <li><strong>Isolation gap:</strong> compare Silo Index across groups (e.g. international students) and whether societies narrow that gap in the data.</li>
+          <li><strong>Discussion:</strong> contrast &ldquo;accidental&rdquo; ties (hostel and class proximity) with more <strong>intentional</strong>, data-informed affinity matching for a more integrated campus.</li>
+        </ul>
+      </section>
+
+      <section id="conclusion">
+        <h2><span class="num">6</span> Conclusion</h2>
+        <p>GIKI is diverse on paper, but the small closed friend groups reflect structural silos. Statistical tests probe whether societies act as the main bridge; K-means surfaces hidden interest-based communities. Together, these pieces support a practical recommendation: use <strong>interest tribes</strong> to shape cross-faculty orientation, mixer design, and society recruitment so connections are easier to form on purpose, not only by accident.</p>
+      </section>
+
+      <section id="outputs">
+        <h2>Notebook outputs</h2>
+        <p style="color:var(--muted);font-size:0.95rem;">After you run the notebook, charts appear under <code>output/</code>. They load here automatically if present.</p>
+        <div class="outputs">
+          <figure>
+            <img src="../output/eda_dashboard.png" alt="EDA dashboard" onerror="this.removeAttribute('src');this.style.display='none';var n=this.nextElementSibling;if(n)n.style.display='block';" />
+            <p class="fallback" style="display:none;margin:1rem;font-size:0.9rem;color:var(--muted);">Run the notebook to generate <code>output/eda_dashboard.png</code>.</p>
+            <figcaption>EDA dashboard (six charts)</figcaption>
+          </figure>
+          <figure>
+            <img src="../output/cluster_chart.png" alt="PCA cluster visualization" onerror="this.removeAttribute('src');this.style.display='none';var n=this.nextElementSibling;if(n)n.style.display='block';" />
+            <p class="fallback" style="display:none;margin:1rem;font-size:0.9rem;color:var(--muted);">Run clustering cells to generate <code>output/cluster_chart.png</code>.</p>
+            <figcaption>PCA cluster view</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <footer>
+        <p><strong>Local preview:</strong> from the <strong>project root</strong> run <code>python -m http.server 8765</code> or <code>serve.ps1</code>, then open <code>http://localhost:8765/showcase/index.html</code> (figures load from <code>output/</code>).</p>
+        <p>Opening this file with <code>file://</code> still works; charts appear after you run the notebook.</p>
+        <p><a href="../GIKI_Connect_Notebook.ipynb">Notebook file</a> (open in Cursor / Jupyter to re-run the pipeline).</p>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

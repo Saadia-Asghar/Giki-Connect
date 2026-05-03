@@ -4,35 +4,38 @@ Analyzing social siloing and the “society bridge” at GIKI — survey data, n
 
 **Authors:** Fatima Tabasum (2024178), Saadia Asghar (2024550) · Theory of Data Science · Instructor: Sir Shahab Ansari
 
+**Repository:** [github.com/Saadia-Asghar/Giki-Connect](https://github.com/Saadia-Asghar/Giki-Connect)
+
 ## Repo layout
 
+- `index.html` — single project showcase page (open via local server for images)
 - `GIKI_Connect_Notebook.ipynb` — full pipeline (cleaning, stats, K-means, figures)
-- `GIKI_Connect_Data.xlsx` — survey export (add locally if not in repo; do not commit sensitive rows if policy requires)
-- `showcase/index.html` — project proposal / demo page
+- `GIKI_Connect_Data.xlsx` — survey export
 - `output/` — generated CSVs, plots, and `output/model/` pickles after you run the notebook
+- `design/giki-connect-frames.svg` — wireframe for **Figma** (File → Import)
+- `serve.ps1` — starts Python server, then opens the browser (avoids connection refused)
 
-## Local preview (showcase page)
+## Local preview (fixes ERR_CONNECTION_REFUSED)
 
-The showcase loads images from `output/`. **Start the HTTP server from this repo root** (not from inside `showcase/` only), then open the URL below.
+Nothing listens on port **8765** until you start a server. **Either:**
 
-**Option A — PowerShell helper**
+1. **Terminal** in the project folder: `python -m http.server 8765` — wait until you see `Serving HTTP on...`, **then** open [http://localhost:8765/](http://localhost:8765/)
 
-```powershell
-cd path\to\giki_project
-powershell -ExecutionPolicy Bypass -File .\serve.ps1
-```
+2. **PowerShell:** `powershell -ExecutionPolicy Bypass -File .\serve.ps1` — opens the browser automatically after a short delay.
 
-**Option B — manual**
+3. **Cursor:** `Terminal → Run Task… → Serve site (localhost:8765)`, then open [http://localhost:8765/](http://localhost:8765/) in Simple Browser or Chrome.
 
-```powershell
-cd path\to\giki_project
-python -m http.server 8765
-```
+If images are missing, run the notebook to create `output/eda_dashboard.png` and `output/cluster_chart.png`.
 
-Browser: [http://localhost:8765/showcase/index.html](http://localhost:8765/showcase/index.html)  
-or [http://localhost:8765/](http://localhost:8765/) (redirects to the showcase).
+## Figma (no MCP)
 
-If images 404, run the notebook first to create `output/eda_dashboard.png` and `output/cluster_chart.png`.
+This workspace does **not** include a Figma MCP server. To use the layout in Figma:
+
+1. Open [Figma](https://www.figma.com/) in the browser or desktop app.
+2. **File → Import** (or drag onto the canvas).
+3. Choose `design/giki-connect-frames.svg`.
+
+You can also paste a screenshot of `index.html` into Figma as a reference layer.
 
 ## Jupyter
 
@@ -43,17 +46,10 @@ jupyter notebook
 
 Open `GIKI_Connect_Notebook.ipynb` and run all cells top to bottom.
 
-## GitHub
-
-Remote: `https://github.com/Saadia-Asghar/Giki-Connect.git`
+## Push updates
 
 ```bash
-git init
-git add .
-git commit -m "Add GIKI-Connect notebook, showcase, and outputs"
-git branch -M main
-git remote add origin https://github.com/Saadia-Asghar/Giki-Connect.git
-git push -u origin main
+git add -A
+git commit -m "Your message"
+git push origin main
 ```
-
-Use GitHub Desktop, or a [personal access token](https://github.com/settings/tokens) when Git asks for a password over HTTPS.

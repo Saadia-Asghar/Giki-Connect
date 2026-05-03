@@ -1,6 +1,6 @@
 # GIKI-Connect
 
-Campus app concept: **students** enter hobbies + social sliders → the **same K-Means + scaler** saved from your notebook assigns an **interest tribe**, then the app suggests **admin-posted events** and **anonymized peers** from `output/combined_with_clusters.csv` (same cluster + hobby overlap). **GIKI admin** posts events via the Admin tab (JSON storage in `data/events.json`).
+**Project:** *Analyzing social siloing and the “society bridge” in a residential campus* (Theory of Data Science). The web app gives students **suggestions**—mixers and anonymized “say hi to” ideas—while **GIKI admin** posts events (`data/events.json`). Under the hood it uses the same **K-Means + scaler** artifacts as `GIKI_Connect_Notebook.ipynb` and cohort rows in `output/combined_with_clusters.csv`.
 
 **Authors:** Fatima Tabasum (2024178), Saadia Asghar (2024550) · Theory of Data Science · Instructor: Sir Shahab Ansari
 
@@ -8,7 +8,7 @@ Campus app concept: **students** enter hobbies + social sliders → the **same K
 
 ## Is the app really using the trained model?
 
-**Yes.** On each “Get tribe & suggestions” request the server:
+**Yes.** On each “Get suggestions” request the server:
 
 1. Builds the same feature row as the notebook (`h_*` hobby columns + `SocHours`, `ComfortScore`, **`Silo_Index`** = report silo: (friends same province **or** same faculty) ÷ total friends — from survey % we use **p + f − p×f** with p,f on 0–1; optional **friends** count defaults to 4 like the survey mapping).
 2. Runs `scaler.transform(...)` then `kmeans.predict(...)` on **`output/model/scaler.pkl`** and **`output/model/kmeans.pkl`** (joblib).

@@ -13,9 +13,9 @@
   <div class="wrap">
     <header class="top">
       <div>
-        <div class="badge">K-Means · notebook-trained model</div>
+        <div class="badge">Theory of Data Science · GIKI</div>
         <h1>GIKI-Connect</h1>
-        <p class="lede">Students get an <strong>interest tribe</strong> from the saved model, then <strong>events</strong> and <strong>peer ideas</strong> aligned to that tribe. Admins post mixers and tick which tribes should see them first.</p>
+        <p class="lede"><strong>Analyzing social siloing and the “society bridge”</strong> on a residential campus—shared interests first. Students see mixers and people to say hi to; admins publish events for the right crowds.</p>
       </div>
       <nav class="tabs" role="tablist">
         <button type="button" class="tab active" data-tab="student" role="tab" aria-selected="true">Student</button>
@@ -25,9 +25,9 @@
 
     <div id="panel-student" class="panel">
       <section class="card insight-card">
-        <h2>Why this exists · limits · roadmap</h2>
+        <h2>Campus context</h2>
         <div id="student-insight-body" class="insight-body">
-          <p class="hint">Loading campus context…</p>
+          <p class="hint">Loading…</p>
         </div>
       </section>
 
@@ -59,44 +59,37 @@
           <label>Close friends from <em>same faculty</em> (%) <strong id="same_fac_pct_v">50%</strong></label>
           <input type="range" id="same_fac_pct" min="0" max="100" step="5" value="50" />
         </div>
-        <button type="button" class="primary" id="submit">Get tribe &amp; suggestions</button>
+        <button type="button" class="primary" id="submit">Get suggestions</button>
         <p class="error" id="error" role="alert"></p>
       </section>
 
       <section class="card hidden" id="result" aria-live="polite">
-        <h2>Your tribe (from trained model)</h2>
+        <h2>Suggestions for you</h2>
         <p class="result-tribe" id="tribe-title"></p>
-        <p class="result-meta" id="tribe-meta"></p>
-        <p class="result-meta hint" id="tribe-cohort-silo"></p>
-        <p class="model-note" id="model-note"></p>
         <div class="silo-row">
-          <span>Your silo index (from your sliders)</span>
+          <span>Friendship concentration (silo)</span>
           <span id="silo-label"></span>
         </div>
         <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
-        <p class="hint" style="margin-top:0.35rem">
-          <strong>Silo index (report):</strong> (# close friends same province <em>or</em> same faculty) ÷ (total close friends). With only the two % sliders, we use the same estimate as the notebook: <code>p + f − p×f</code> (p,f = those % on 0–1). That <strong>Silo_Index</strong> is what K-Means uses, with your hobbies, society hours, and comfort.
-        </p>
-        <p class="hint" style="margin-top:0.75rem">Typical hobbies in this tribe:</p>
+        <p class="hint" style="margin-top:0.75rem">You may also like these hobbies in your interest circle:</p>
         <div class="pill-list" id="tribe-hobbies"></div>
         <div class="rec" id="rec"></div>
 
-        <h3 class="subhead">Events to attend</h3>
-        <p class="hint">Ranked by hobby overlap + tribe match to admin posts.</p>
+        <h3 class="subhead">Events to try</h3>
+        <p class="hint">Sorted so the ones that fit you rise to the top.</p>
         <div id="event-list" class="event-list"></div>
 
-        <h3 class="subhead">People to meet</h3>
-        <p class="hint">Same K-Means cluster + shared hobbies (demo anonymization).</p>
+        <h3 class="subhead">People to say hi to</h3>
+        <p class="hint">Anonymized ideas—same hobby overlap as conversation starters.</p>
         <div id="peer-list" class="peer-list"></div>
       </section>
     </div>
 
     <div id="panel-admin" class="panel hidden">
       <section class="card tribe-atlas">
-        <h2>What “tribes” are (for event targeting)</h2>
+        <h2>Interest tribes (for event targeting)</h2>
         <p class="hint">
-          Your notebook trained <strong>K=4</strong> clusters on hobbies + society hours + comfort + report-style <strong>Silo_Index</strong>. Each id <strong>0–3</strong> is one interest tribe.
-          When you publish an event, ticking <em>target tribes</em> tells the app to prioritise those students; leaving it blank still matches on <strong>hobby tags</strong> only.
+          Each card is one <strong>interest tribe</strong> (ID <strong>0–3</strong>). When you publish an event, optional <em>target tribes</em> help the right students see it first; you can also rely on <strong>hobby tags</strong> alone.
         </p>
         <p class="kmeans-note" id="admin-kmeans-note"></p>
         <div id="admin-tribe-cards" class="tribe-atlas-grid"></div>
@@ -140,7 +133,7 @@
     </div>
 
     <footer>
-      Fatima Tabasum · Saadia Asghar · Theory of Data Science · <code>output/model/</code> · <code>output/combined_with_clusters.csv</code>
+      Fatima Tabasum (2024178) · Saadia Asghar (2024550) · BSc Data Science · Theory of Data Science · Instructor: Sir Shahab Ansari
     </footer>
   </div>
   <script src="/assets/app.js"></script>

@@ -1,9 +1,8 @@
 """
-GIKI-Connect — Flask app using the trained K-Means pipeline from the notebook.
+GIKI-Connect — course project app (social siloing + society bridge + interest-led ties).
 
-Uses joblib pickles in output/model/ (same scaler + kmeans as notebook).
-Suggests campus events (admin-posted) and anonymized peers from output/combined_with_clusters.csv
-by matching interest tribe (cluster) + hobby overlap.
+Flask serves the UI and APIs; joblib pickles in output/model/ match the notebook pipeline.
+Suggests admin-posted events and anonymized peer ideas from output/combined_with_clusters.csv.
 
 Run: python app_server.py  or  START_APP.bat
 """
@@ -70,24 +69,25 @@ TRIBE_ADMIN_GUIDE = {
     "3": "Cooking, music, hiking — food collabs, trail days, low-key acoustic hikes.",
 }
 
+# Student-facing copy aligned with the course proposal (siloing, society bridge, interest-led ties).
 CAMPUS_CONTEXT = {
-    "why_title": "Why this helps GIKI",
+    "why_title": "What this is about",
     "why": [
-        "Friend groups often form by accident (same wing, same class). The model groups students by shared hobbies so mixers can be intentional, not random posters.",
-        "Admins see which interest tribes exist in the data and can aim events at overlapping tribes instead of one-size-fits-all announcements.",
-        "It connects to your analysis: silo index + societies + clusters as “interest tribes” from the survey pipeline.",
+        "GIKI is a residential campus, but many students still sit in small circles tied to faculty, province, or batch.",
+        "Societies and hobby spaces are the usual “bridge” out of those bubbles—shared interests before shared demographics.",
+        "This screen nudges you toward mixers and people who overlap what you like, so connections can be a bit more intentional.",
     ],
-    "limits_title": "Honest limits (read before scaling)",
+    "limits_title": "Keep in mind",
     "limits": [
-        "Clusters are statistical — not personality labels. A student is more than one tribe.",
-        "The demo mixes real survey rows with synthetic data for ML class; production would retrain on opted-in data only and follow campus privacy rules.",
-        "Peer suggestions are anonymized demos — not a directory. Real rollout needs consent, reporting, and moderation.",
+        "Suggestions are a campus pilot, not a directory—names are anonymized and you should always use good judgment.",
+        "One profile does not define you; treat tribes as a light hint, not a label.",
+        "Events are posted by admins in the demo—check society boards and official notices for real logistics.",
     ],
-    "next_title": "What to build next",
+    "next_title": "Worth trying next",
     "next": [
-        "GIKI login + roles (student / society / admin) and audit log for who posted each event.",
-        "RSVP, waitlists, and “who’s going” visible only to attendees; post-event feedback to improve matching.",
-        "Retrain on fresh semesters; track if silo index drops for attendees vs non-attendees.",
+        "Go to one cross-faculty mixer or society intro night with a wing-mate from another department.",
+        "Pick an event below and commit to saying hello to two people you do not already sit with in class.",
+        "If you are in a society, invite someone who is not—especially international or junior-year students who often feel on the edge of cliques.",
     ],
 }
 
@@ -227,7 +227,7 @@ def tribes_payload() -> dict:
         )
     return {
         "tribes": tribes,
-        "kmeans_note": "K=4 from the notebook: four “interest tribes” learned from hobby + society hours + comfort + Silo_Index (report: share of friends same province OR same faculty; from survey % we use p+f−p·f, same as n_or/T) after scaling. Tribe id is the cluster label (0–3).",
+        "kmeans_note": "Four interest tribes (IDs 0–3). Tick them when posting so the right students see your event first; optional if hobby tags already match.",
         **CAMPUS_CONTEXT,
     }
 
@@ -261,11 +261,21 @@ def predict_row(
         silo_lbl = "High (siloed)"
 
     prof = cluster_profiles[str(cluster)]
-    rec = (
-        "Try a society or hobby mixer to meet people outside your usual circle."
-        if silo > 0.5
-        else "Your profile fits this interest tribe — great anchor for mixers and collaborations."
-    )
+    if silo > 0.5:
+        rec = (
+            "Your close friendships look quite concentrated—pick one society taster session or "
+            "cross-faculty mixer this week and aim to add one contact outside your usual batch."
+        )
+    elif soc_hours < 1.0:
+        rec = (
+            "Low society hours this week—if you can, try one society desk or open event; "
+            "they are often the easiest bridge between faculties on a residential campus."
+        )
+    else:
+        rec = (
+            "Strong overlap with this interest circle—use the events list to host or co-host a small "
+            "hobby hangout and invite someone from another province or program."
+        )
     peers = suggest_peers(cluster, hobbies)
     events = suggest_events(cluster, hobbies)
     return {
@@ -279,7 +289,7 @@ def predict_row(
         "recommendation": rec,
         "suggested_peers": peers,
         "suggested_events": events,
-        "model_note": "Predictions use output/model/kmeans.pkl + scaler.pkl (same training as the notebook: Silo_Index = p + f − p×f from your % sliders; same as n_or/T with survey-style union estimate).",
+        "model_note": "",
     }
 
 

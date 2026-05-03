@@ -84,7 +84,6 @@ function renderStudentInsight() {
   const ul = (items) =>
     `<ul class="insight-list">${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
   root.innerHTML = `
-    <p class="insight-kicker">${escapeHtml(tribesData.kmeans_note || "")}</p>
     <h3 class="insight-h3">${escapeHtml(tribesData.why_title || "")}</h3>
     ${ul(tribesData.why || [])}
     <h3 class="insight-h3">${escapeHtml(tribesData.limits_title || "")}</h3>
@@ -108,7 +107,7 @@ function renderAdminTribeAtlas() {
     card.innerHTML = `
       <div class="tribe-mini-id">Tribe ${t.id}</div>
       <h4 class="tribe-mini-name">${escapeHtml(t.name)}</h4>
-      <p class="tribe-mini-stats">${t.n} profiles · cohort avg silo ${t.avg_silo}</p>
+      <p class="tribe-mini-stats">${t.n} students in sample · avg friendship concentration ${t.avg_silo}</p>
       <p class="tribe-mini-tops">Top hobbies: <strong>${escapeHtml(tops)}</strong></p>
       <p class="tribe-mini-guide">${escapeHtml(t.admin_guide || "")}</p>
     `;
@@ -157,7 +156,9 @@ function formatTribeTargets(clusterIds) {
   return ` · Targets: ${parts.join("; ")}`;
 }
 
-function renderEvents(targetEl, events) {
+/** @param {{ showTargets?: boolean }} [opts] */
+function renderEvents(targetEl, events, opts = {}) {
+  const showTargets = opts.showTargets !== false;
   const root = el(targetEl);
   root.innerHTML = "";
   if (!events || !events.length) {
@@ -169,7 +170,7 @@ function renderEvents(targetEl, events) {
     const div = document.createElement("div");
     div.className = "event-card";
     const tags = (e.hobby_tags || []).join(", ");
-    const cl = formatTribeTargets(e.clusters || []);
+    const cl = showTargets ? formatTribeTargets(e.clusters || []) : "";
     div.innerHTML = `<h4>${escapeHtml(e.title || "")}</h4><div class="meta">${escapeHtml(fmtWhen(e.when_iso))} · ${escapeHtml(e.place || "TBA")}${escapeHtml(cl)}</div><p>${escapeHtml(e.description || "")}</p><div class="meta">Hobby tags: ${escapeHtml(tags || "—")}</div>`;
     root.appendChild(div);
   });
@@ -180,14 +181,14 @@ function renderPeerList(peers) {
   root.innerHTML = "";
   if (!peers || !peers.length) {
     root.innerHTML =
-      '<p class="hint" style="margin:0">No cohort rows for this cluster.</p>';
+      '<p class="hint" style="margin:0">No matches in the demo list—try another hobby or check back after new mixers are posted.</p>';
     return;
   }
   peers.forEach((p) => {
     const div = document.createElement("div");
     div.className = "peer-row";
     const shared = (p.shared_hobbies || []).join(", ") || "—";
-    div.innerHTML = `<div class="who">${escapeHtml(p.display)}</div><div class="meta">${escapeHtml(p.faculty || "")} · ${escapeHtml(p.province || "")}</div><div class="meta">${escapeHtml(p.hobbies_preview || "")}</div><div class="shared">Shared with you: ${escapeHtml(shared)} · overlap ${p.overlap}</div>`;
+    div.innerHTML = `<div class="who">${escapeHtml(p.display)}</div><div class="meta">${escapeHtml(p.faculty || "")} · ${escapeHtml(p.province || "")}</div><div class="meta">${escapeHtml(p.hobbies_preview || "")}</div><div class="shared">Try chatting about: ${escapeHtml(shared)}</div>`;
     root.appendChild(div);
   });
 }
@@ -213,11 +214,7 @@ async function predict() {
       el("result").classList.add("hidden");
       return;
     }
-    el("tribe-title").textContent = `Tribe ${data.cluster} — ${data.tribe_name}`;
-    el("tribe-meta").textContent = `About ${data.tribe_size} profiles in the training data map to this tribe (same K-Means cluster for your inputs).`;
-    const cohortSilo = el("tribe-cohort-silo");
-    cohortSilo.textContent = `In that training group, average silo index was ${data.tribe_avg_silo} — compare to your value below (that average is not calculated from your sliders).`;
-    el("model-note").textContent = data.model_note || "";
+    el("tribe-title").textContent = `Your interest tribe: ${data.tribe_name}`;
     el("silo-fill").style.width = `${Math.min(100, Number(data.silo_index) * 100)}%`;
     el("silo-label").textContent = `${data.silo_index} — ${data.silo_label}`;
     const pills = el("tribe-hobbies");
@@ -228,7 +225,7 @@ async function predict() {
       pills.appendChild(sp);
     });
     el("rec").textContent = data.recommendation;
-    renderEvents("event-list", data.suggested_events);
+    renderEvents("event-list", data.suggested_events, { showTargets: false });
     renderPeerList(data.suggested_peers || []);
     el("result").classList.remove("hidden");
   } catch (e) {

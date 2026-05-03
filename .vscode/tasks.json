@@ -2,12 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Serve site (localhost:8765)",
+      "label": "Serve GIKI app (Flask)",
       "type": "shell",
-      "command": "python -m http.server 8765",
+      "command": "python app_server.py",
       "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {}
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": [],
       "presentation": {

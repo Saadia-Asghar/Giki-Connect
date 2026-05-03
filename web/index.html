@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GIKI-Connect — Find your interest tribe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="badge">K-Means · real survey + notebook pipeline</div>
+      <h1>GIKI-Connect</h1>
+      <p>Pick your hobbies and social sliders — we map you to one of four <strong>interest tribes</strong> using the same model as the course notebook.</p>
+    </header>
+
+    <section class="card" aria-labelledby="hobbies-heading">
+      <h2 id="hobbies-heading">Hobbies</h2>
+      <p style="margin:0 0 1rem;font-size:0.9rem;color:var(--muted);">Select all that apply (at least one).</p>
+      <div class="hobby-grid" id="hobby-grid"></div>
+    </section>
+
+    <section class="card" aria-labelledby="social-heading">
+      <h2 id="social-heading">Social context</h2>
+      <div class="field">
+        <label>Society hours / week <strong id="soc_hours_v">0 h/wk</strong></label>
+        <input type="range" id="soc_hours" min="0" max="10" step="0.5" value="0" />
+      </div>
+      <div class="field">
+        <label>Comfort talking to new people (1–5) <strong id="comfort_v">4</strong></label>
+        <input type="range" id="comfort" min="1" max="5" step="1" value="4" />
+      </div>
+      <div class="field">
+        <label>Close friends from <em>same province</em> (%) <strong id="same_prov_pct_v">50%</strong></label>
+        <input type="range" id="same_prov_pct" min="0" max="100" step="5" value="50" />
+      </div>
+      <div class="field">
+        <label>Close friends from <em>same faculty</em> (%) <strong id="same_fac_pct_v">50%</strong></label>
+        <input type="range" id="same_fac_pct" min="0" max="100" step="5" value="50" />
+      </div>
+      <button type="button" class="primary" id="submit">Find my tribe</button>
+      <p class="error" id="error" role="alert"></p>
+    </section>
+
+    <section class="card" id="result" aria-live="polite">
+      <h2>Your match</h2>
+      <p class="result-tribe" id="tribe-title"></p>
+      <p class="result-meta" id="tribe-meta"></p>
+      <div class="silo-row">
+        <span>Friendship concentration (Silo index)</span>
+        <span id="silo-label"></span>
+      </div>
+      <div class="silo-bar" aria-hidden="true"><i id="silo-fill" style="width:0%"></i></div>
+      <p style="margin:0.75rem 0 0;font-size:0.85rem;color:var(--muted);">Common hobbies in this tribe:</p>
+      <div class="pill-list" id="tribe-hobbies"></div>
+      <div class="rec" id="rec"></div>
+    </section>
+
+    <footer>
+      Fatima Tabasum · Saadia Asghar · Theory of Data Science · model files in <code>output/model/</code>
+    </footer>
+  </div>
+  <script src="/assets/app.js"></script>
+</body>
+</html>

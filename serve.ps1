@@ -1,21 +1,19 @@
-# Serve site from THIS folder. Opens browser AFTER the server starts (avoids ERR_CONNECTION_REFUSED).
-# Usage: powershell -ExecutionPolicy Bypass -File .\serve.ps1
+# Start GIKI-Connect Flask app (model-backed UI on http://127.0.0.1:8765/)
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
-$port = 8765
 
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
-    Write-Host "python not found in PATH. Install Python or use full path." -ForegroundColor Red
+    Write-Host "python not found in PATH." -ForegroundColor Red
     exit 1
 }
 
-Write-Host "Starting http://localhost:$port/ (project root) ..." -ForegroundColor Green
-Write-Host "Press Ctrl+C in this window to stop the server." -ForegroundColor Yellow
+Write-Host "Starting GIKI-Connect app at http://127.0.0.1:8765/ ..." -ForegroundColor Green
+Write-Host "Install deps once:  pip install flask scikit-learn joblib numpy" -ForegroundColor Yellow
+Write-Host "Press Ctrl+C to stop." -ForegroundColor Yellow
 
-# Open browser ~1.5s after server begins (server starts on next line — schedule open in parallel)
 Start-Job -ScriptBlock {
-    Start-Sleep -Milliseconds 1600
-    Start-Process "http://localhost:$using:port/"
+    Start-Sleep -Milliseconds 2000
+    Start-Process "http://127.0.0.1:8765/"
 } | Out-Null
 
-python -m http.server $port
+python app_server.py

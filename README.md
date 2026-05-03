@@ -1,14 +1,26 @@
 # GIKI-Connect
 
-Interest-tribe **web app** using your notebook’s K-Means (`output/model/*.pkl`). Data: `GIKI_Connect_Data.xlsx`, pipeline: `GIKI_Connect_Notebook.ipynb`.
+Web app that loads your **trained K-Means** from `output/model/*.pkl` and maps a student’s hobbies + social sliders to an **interest tribe** — for presenting how the model can be used on campus (mixers, societies).
 
 **Authors:** Fatima Tabasum (2024178), Saadia Asghar (2024550) · Theory of Data Science · Instructor: Sir Shahab Ansari
 
 **GitHub:** [Saadia-Asghar/Giki-Connect](https://github.com/Saadia-Asghar/Giki-Connect)
 
-The old static **proposal showcase** (`index.html` + `showcase/`) has been removed in favor of this app.
+---
 
-## Local preview
+## Show Sir during class (fixes “connection refused”)
+
+`ERR_CONNECTION_REFUSED` means **no server was running** in the background. The app is not a file you double-click alone — you start Python once, then use the browser.
+
+### Easiest (Windows)
+
+1. **Double-click `START_APP.bat`** in this folder.  
+2. Wait until a **black window** says `SERVER IS RUNNING` and your **browser opens by itself**.  
+3. **Leave that black window open** the whole time you present. Closing it stops the app.
+
+If the browser does not open, read the URL printed in the black window (port may be **8766** if **8765** is busy) and paste it into Chrome/Edge.
+
+### Manual
 
 ```powershell
 cd d:\hp2\Downloads\giki_project
@@ -16,25 +28,25 @@ pip install -r requirements.txt
 python app_server.py
 ```
 
-| URL | What |
-|-----|------|
-| http://127.0.0.1:8765/ | **App** — hobbies, sliders, Find my tribe |
-| http://127.0.0.1:8765/design-preview | **Design preview** — same layout as the Figma SVG |
-| http://127.0.0.1:8765/figma.svg | Raw SVG (download or import into Figma) |
+Wait for `SERVER IS RUNNING`, then open the printed link (usually **http://127.0.0.1:8765/**).
 
-Or run **`serve.ps1`** (opens the app after a short delay).
+### URLs when the server is running
 
-**Cursor:** `Terminal → Run Task… → Serve GIKI app (Flask)`.
+| Link | Use |
+|------|-----|
+| **/** | Main app — “Find my tribe” with **real** K-Means |
+| **/presentation** | Same idea + short banner for explaining the project to Sir |
+| **/design-preview** | Figma-style layout preview |
 
-If the app fails to start, run the notebook once so `output/model/kmeans.pkl` exists.
+You can also double-click **`PRESENTATION_OFFLINE.html`** from the folder: it tries the live API on common ports; if the server is off, it still shows the **UI and tribe names** (offline demo) so you are never stuck with a blank error page.
 
-## Figma (import — no MCP)
+---
 
-Cursor does not ship a Figma MCP here. To get the design **into Figma**:
+## Before the first run
 
-1. In Figma: **File → Import** (or drag the file onto the canvas).
-2. Choose **`design/giki-app-figma.svg`** — mobile frame, layer names, and **tokens** match `web/styles.css`.
-3. Optional notes: **`design/FIGMA.txt`**
+Run **`GIKI_Connect_Notebook.ipynb`** once (all cells) so `output/model/kmeans.pkl` exists.
+
+---
 
 ## Jupyter
 
@@ -43,7 +55,13 @@ pip install jupyter pandas numpy scikit-learn matplotlib scipy joblib openpyxl
 jupyter notebook
 ```
 
-Run `GIKI_Connect_Notebook.ipynb` top to bottom, then restart `app_server.py`.
+---
+
+## Figma
+
+Import **`design/giki-app-figma.svg`** in Figma (**File → Import**). There is no built-in Figma MCP in this repo.
+
+---
 
 ## Push
 

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GIKI-Connect — Presentation (interest tribes)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#0c1222;--surface:#141b2e;--card:#1a2340;--border:#2a3555;--text:#e8ecf4;--muted:#8b95b0;--accent:#2dd4bf;--accent-dim:rgba(45,212,191,.15);--danger:#f87171;--radius:16px;--font:"DM Sans",system-ui,sans-serif}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;background-image:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(45,212,191,.12),transparent),radial-gradient(ellipse 60% 40% at 100% 0%,rgba(99,102,241,.1),transparent)}
+    .banner{font-size:.82rem;padding:.65rem 1rem;background:#1e293b;border-bottom:1px solid var(--border);color:#cbd5e1;text-align:center}
+    .banner strong{color:var(--accent)}
+    .wrap{max-width:640px;margin:0 auto;padding:1.25rem 1rem 2.5rem}
+    header{margin-bottom:1.5rem}
+    .badge{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);padding:.3rem .6rem;border-radius:999px;margin-bottom:.65rem}
+    header h1{font-size:1.55rem;margin:0 0 .4rem}
+    header p{margin:0;color:var(--muted);font-size:.92rem}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.1rem;margin-bottom:1rem}
+    .card h2{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 .85rem}
+    .hobby-grid{display:flex;flex-wrap:wrap;gap:.45rem}
+    .hobby-grid label{cursor:pointer}
+    .hobby-grid input{position:absolute;opacity:0;pointer-events:none}
+    .hobby-grid span{display:inline-block;padding:.4rem .7rem;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:.85rem;color:var(--muted)}
+    .hobby-grid input:checked+span{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+    .field{margin-bottom:1rem}
+    .field label{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:.3rem;color:var(--muted)}
+    .field label strong{color:var(--accent)}
+    input[type=range]{width:100%;accent-color:var(--accent)}
+    button.primary{width:100%;margin-top:.2rem;padding:.8rem;font-size:1rem;font-weight:700;font-family:inherit;color:#042f2e;background:var(--accent);border:none;border-radius:12px;cursor:pointer}
+    #result{display:none}#result.visible{display:block}
+    .result-tribe{font-size:1.25rem;font-weight:700;margin:0 0 .3rem}
+    .result-meta{font-size:.88rem;color:var(--muted);margin-bottom:.75rem}
+    .silo-bar{height:8px;border-radius:999px;background:var(--surface);overflow:hidden;margin:.4rem 0}
+    .silo-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#6366f1);max-width:100%}
+    .silo-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+    .pill-list{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.6rem}
+    .pill-list span{font-size:.75rem;padding:.2rem .5rem;border-radius:8px;background:var(--surface);border:1px solid var(--border)}
+    .rec{margin-top:.85rem;padding:.75rem;border-radius:12px;background:var(--accent-dim);border:1px solid rgba(45,212,191,.35);font-size:.88rem}
+    .error{color:var(--danger);font-size:.88rem;margin-top:.6rem}
+    footer{text-align:center;font-size:.75rem;color:var(--muted);margin-top:1.5rem}
+  </style>
+</head>
+<body>
+  <div class="banner" id="banner">
+    <strong id="banner-mode">Connecting…</strong> — For class: double-click <code>START_APP.bat</code>, then refresh this page (or open the link printed in the black window).
+  </div>
+  <div class="wrap">
+    <header>
+      <div class="badge">K-Means · trained model from notebook</div>
+      <h1>GIKI-Connect</h1>
+      <p>How the trained model is used: students enter hobbies + social sliders → the app returns an <strong>interest tribe</strong> (cluster) and silo insight — useful for mixers and society design.</p>
+    </header>
+    <section class="card"><h2>Hobbies</h2><p style="margin:0 0 .8rem;font-size:.88rem;color:var(--muted)">Select at least one.</p><div class="hobby-grid" id="hobby-grid"></div></section>
+    <section class="card">
+      <h2>Social context</h2>
+      <div class="field"><label>Society hours / week <strong id="soc_hours_v">0</strong></label><input type="range" id="soc_hours" min="0" max="10" step="0.5" value="0" /></div>
+      <div class="field"><label>Comfort (1–5) <strong id="comfort_v">4</strong></label><input type="range" id="comfort" min="1" max="5" step="1" value="4" /></div>
+      <div class="field"><label>Same-province friends % <strong id="same_prov_pct_v">50%</strong></label><input type="range" id="same_prov_pct" min="0" max="100" step="5" value="50" /></div>
+      <div class="field"><label>Same-faculty friends % <strong id="same_fac_pct_v">50%</strong></label><input type="range" id="same_fac_pct" min="0" max="100" step="5" value="50" /></div>
+      <button type="button" class="primary" id="submit">Find my tribe</button>
+      <p class="error" id="error"></p>
+    </section>
+    <section class="card" id="result">
+      <h2>Your match</h2>
+      <p class="result-tribe" id="tribe-title"></p>
+      <p class="result-meta" id="tribe-meta"></p>
+      <div class="silo-row"><span>Silo index</span><span id="silo-label"></span></div>
+      <div class="silo-bar"><i id="silo-fill" style="width:0%"></i></div>
+      <p style="margin:.6rem 0 0;font-size:.82rem;color:var(--muted)">Top hobbies in this tribe:</p>
+      <div class="pill-list" id="tribe-hobbies"></div>
+      <div class="rec" id="rec"></div>
+    </section>
+    <footer>Fatima Tabasum · Saadia Asghar · Theory of Data Science · Sir Shahab Ansari</footer>
+  </div>
+  <script>
+    const CLUSTER = {"0":{"name":"Skating & Music","n":9,"avg_silo":0.389,"top_hobbies":["Skating","Music","Cooking"]},"1":{"name":"Debating & Art","n":32,"avg_silo":0.301,"top_hobbies":["Debating","Art","Fitness"]},"2":{"name":"Gaming & Music","n":27,"avg_silo":0.472,"top_hobbies":["Gaming","Music","Travelling"]},"3":{"name":"Cooking & Music","n":80,"avg_silo":0.364,"top_hobbies":["Cooking","Music","Hiking"]}};
+    const HOBBIES = ["Music","Art","Cooking","Fitness","Football","Hiking","Coding / Programming","Reading","Debating","Gaming","Cricket","Photography","Travelling","Skating"];
+    function el(id){return document.getElementById(id);}
+    function buildHobbies(){const g=el("hobby-grid");g.innerHTML="";HOBBIES.forEach(h=>{const lab=document.createElement("label");const inp=document.createElement("input");inp.type="checkbox";inp.value=h;const sp=document.createElement("span");sp.textContent=h;lab.appendChild(inp);lab.appendChild(sp);g.appendChild(lab);});}
+    function readS(){return{soc_hours:+el("soc_hours").value,comfort:+el("comfort").value,same_prov_pct:+el("same_prov_pct").value,same_fac_pct:+el("same_fac_pct").value};}
+    function sync(){const s=readS();el("soc_hours_v").textContent=s.soc_hours+" h/wk";el("comfort_v").textContent=String(s.comfort);el("same_prov_pct_v").textContent=Math.round(s.same_prov_pct)+"%";el("same_fac_pct_v").textContent=Math.round(s.same_fac_pct)+"%";}
+    function showData(data, live){el("tribe-title").textContent="Tribe "+data.cluster+" — "+data.tribe_name;el("tribe-meta").textContent="Training set: ~"+data.tribe_size+" profiles in this tribe · avg silo in tribe "+data.tribe_avg_silo+(live?"":" (offline estimate)");el("silo-fill").style.width=Math.min(100,data.silo_index*100)+"%";el("silo-label").textContent=data.silo_index+" — "+data.silo_label;const pills=el("tribe-hobbies");pills.innerHTML="";(data.top_hobbies||[]).forEach(h=>{const sp=document.createElement("span");sp.textContent=h;pills.appendChild(sp);});el("rec").textContent=data.recommendation;el("result").classList.add("visible");}
+    function offlinePredict(hobbies,soc,comfort,sp,sf){let x=0;hobbies.forEach(h=>{for(let i=0;i<h.length;i++)x+=h.charCodeAt(i);});const cluster=(x+Math.round(soc*5)+comfort*7+sp+sf)%4;const p=CLUSTER[String(cluster)];const silo=Math.round((sp+sf)/200*1000)/1000;let lbl=silo<.25?"Low (diverse)":silo<.5?"Moderate":"High (siloed)";let rec=silo>.5?"Try a society or hobby mixer to meet people outside your usual circle.":"Your profile fits this interest tribe — useful for mixers and collaborations.";return{cluster,tribe_name:p.name,tribe_size:p.n,tribe_avg_silo:p.avg_silo,top_hobbies:p.top_hobbies,silo_index:silo,silo_label:lbl,recommendation:rec};}
+    async function tryLiveApi(body){const urls=[];if(location.protocol!=="file:")urls.push("/api/predict");for(let p=8765;p<=8790;p++)urls.push("http://127.0.0.1:"+p+"/api/predict");for(const url of urls){try{const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:AbortSignal.timeout(1200)});if(r.ok)return await r.json();}catch(e){}}return null;}
+    async function predict(){el("error").textContent="";const hobbies=[...document.querySelectorAll("#hobby-grid input:checked")].map(i=>i.value);if(!hobbies.length){el("error").textContent="Pick at least one hobby.";return;}const body={hobbies,...readS()};el("submit").disabled=true;let live=null;try{live=await tryLiveApi(body);}catch(e){}if(live){el("banner-mode").textContent="Live model";el("banner").style.borderLeft="4px solid #2dd4bf";showData(live,true);}else{el("banner-mode").textContent="Offline preview";el("banner").style.borderLeft="4px solid #fbbf24";showData(offlinePredict(hobbies,body.soc_hours,body.comfort,body.same_prov_pct,body.same_fac_pct),false);if(!live)el("error").textContent="Tip: run START_APP.bat for real K-Means predictions from output/model/.";}el("submit").disabled=false;}
+    document.addEventListener("DOMContentLoaded",()=>{buildHobbies();["soc_hours","comfort","same_prov_pct","same_fac_pct"].forEach(id=>el(id).addEventListener("input",sync));sync();el("submit").addEventListener("click",predict);if(location.protocol!=="file:"){el("banner-mode").textContent="Try Find my tribe — uses live API if this tab is from the Flask server";}});
+  </script>
+</body>
+</html>

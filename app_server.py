@@ -1,11 +1,16 @@
 """
 GIKI-Connect — local app: uses trained K-Means + scaler from output/model/.
-Run from project root:  python app_server.py
-Then open http://127.0.0.1:8765/
+Run:  python app_server.py   OR double-click START_APP.bat (Windows)
+
+Picks a free port from 8765 upward and opens your browser automatically.
 """
 from __future__ import annotations
 
 import json
+import socket
+import threading
+import time
+import webbrowser
 from pathlib import Path
 
 import joblib
@@ -92,9 +97,24 @@ def predict_row(hobbies: list[str], soc_hours: float, comfort: float, same_prov_
 app = Flask(__name__, static_folder=str(WEB), static_url_path="/assets")
 
 
+@app.after_request
+def _cors(resp):
+    """So PRESENTATION_OFFLINE.html can call the API from another port or file preview."""
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return resp
+
+
 @app.get("/")
 def index():
     return send_from_directory(WEB, "index.html")
+
+
+@app.get("/presentation")
+def presentation():
+    """Same UI + story for class; uses live /api/predict when this tab is served by Flask."""
+    return send_from_directory(str(ROOT), "PRESENTATION_OFFLINE.html")
 
 
 @app.get("/figma.svg")
@@ -123,8 +143,10 @@ def design_preview():
     )
 
 
-@app.post("/api/predict")
+@app.route("/api/predict", methods=["POST", "OPTIONS"])
 def api_predict():
+    if request.method == "OPTIONS":
+        return ("", 204)
     data = request.get_json(force=True, silent=True) or {}
     hobbies = data.get("hobbies") or []
     if not isinstance(hobbies, list):
@@ -150,15 +172,47 @@ def api_predict():
     return jsonify(out)
 
 
+def _pick_port(start: int = 8765, attempts: int = 25) -> int:
+    for port in range(start, start + attempts):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.bind(("127.0.0.1", port))
+            return port
+        except OSError:
+            continue
+        finally:
+            s.close()
+    raise SystemExit("No free TCP port found in range — close other apps using 8765–8790.")
+
+
 def main():
     if not (MODEL_DIR / "kmeans.pkl").exists():
         raise SystemExit(
             f"Missing model files under {MODEL_DIR}. Run GIKI_Connect_Notebook.ipynb first."
         )
     load_artifacts()
-    print("GIKI-Connect app — http://127.0.0.1:8765/")
-    print("Design preview (Figma handoff) — http://127.0.0.1:8765/design-preview")
-    app.run(host="127.0.0.1", port=8765, debug=False)
+    port = _pick_port()
+    base = f"http://127.0.0.1:{port}"
+    url = f"{base}/"
+
+    def _open_browser():
+        time.sleep(1.8)
+        webbrowser.open(url)
+
+    threading.Thread(target=_open_browser, daemon=True).start()
+
+    print()
+    print("=" * 56)
+    print("  GIKI-Connect — SERVER IS RUNNING")
+    print("=" * 56)
+    print(f"  App:            {url}")
+    print(f"  For Sir / slides: {base}/presentation")
+    print(f"  Design preview:   {base}/design-preview")
+    print(f"  Double-click:     PRESENTATION_OFFLINE.html (works offline; live if server is up)")
+    print("  Keep this window OPEN while you present. Ctrl+C to stop.")
+    print("=" * 56)
+    print()
+    app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
 
 
 if __name__ == "__main__":

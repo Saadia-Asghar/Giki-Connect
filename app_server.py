@@ -14,7 +14,9 @@ from flask import Flask, jsonify, request, send_from_directory
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
+DESIGN = ROOT / "design"
 MODEL_DIR = ROOT / "output" / "model"
+FIGMA_SVG = DESIGN / "giki-app-figma.svg"
 
 HOBBIES = [
     "Music",
@@ -95,6 +97,32 @@ def index():
     return send_from_directory(WEB, "index.html")
 
 
+@app.get("/figma.svg")
+def figma_svg():
+    if not FIGMA_SVG.is_file():
+        return ("SVG not found", 404)
+    return send_from_directory(str(DESIGN), "giki-app-figma.svg", mimetype="image/svg+xml")
+
+
+@app.get("/design-preview")
+def design_preview():
+    """Static layout preview for Figma handoff (matches design/giki-app-figma.svg)."""
+    return (
+        "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'/>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'/>"
+        "<title>GIKI-Connect — design preview</title>"
+        "<style>body{margin:0;background:#0c1222;color:#8b95b0;font-family:system-ui,sans-serif;"
+        "min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px;}"
+        "a{color:#2dd4bf}img{max-width:100%;height:auto;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.45)}"
+        "p{max-width:36rem;text-align:center;font-size:14px;margin-top:16px}</style></head><body>"
+        "<p>Import this same graphic into Figma via <strong>File → Import</strong> → "
+        "<code>design/giki-app-figma.svg</code></p>"
+        "<p><a href='/'>← Back to app</a> · <a href='/figma.svg' download>Download SVG</a></p>"
+        "<img src='/figma.svg' width='393' height='1200' alt='GIKI-Connect Figma frame'/>"
+        "</body></html>"
+    )
+
+
 @app.post("/api/predict")
 def api_predict():
     data = request.get_json(force=True, silent=True) or {}
@@ -129,6 +157,7 @@ def main():
         )
     load_artifacts()
     print("GIKI-Connect app — http://127.0.0.1:8765/")
+    print("Design preview (Figma handoff) — http://127.0.0.1:8765/design-preview")
     app.run(host="127.0.0.1", port=8765, debug=False)
 
 

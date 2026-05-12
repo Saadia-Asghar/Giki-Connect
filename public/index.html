@@ -21,7 +21,7 @@
         </div>
         <p class="site-masthead__tagline">Theory of Data Science · course project demo</p>
       </div>
-      <p class="site-masthead__lede">Start on <strong>How to use</strong>, then switch to <strong>Student</strong> to try the demo or <strong>GIKI admin</strong> to add a campus event.</p>
+      <p class="site-masthead__lede">Open <strong>How to use</strong> for a short walkthrough, then <strong>Student</strong> to try your match or <strong>GIKI admin</strong> to post a sample campus event.</p>
       <nav class="tabs" role="tablist" aria-label="Main sections">
         <button type="button" class="tab active" id="tab-btn-guide" data-tab="guide" role="tab" aria-selected="true" aria-controls="panel-guide">How to use</button>
         <button type="button" class="tab" id="tab-btn-student" data-tab="student" role="tab" aria-selected="false" aria-controls="panel-student">Student</button>
@@ -222,18 +222,20 @@
     <div id="panel-guide" class="panel" role="tabpanel" aria-labelledby="tab-btn-guide">
       <section class="card guide-hero">
         <h1 class="guide-title">How to use GIKI-Connect</h1>
-        <p class="guide-lead">Use the three tabs at the top like chapters: read this guide first, try the student story second, and use the admin area only if you are pretending to post a campus event.</p>
+        <p class="guide-lead">This page is your plain-language manual. GIKI-Connect is a <strong>course demo</strong> about life on a residential campus: small circles by batch or background, and how <strong>shared interests and societies</strong> can widen your week.</p>
+        <p class="guide-lead">You fill a short form; the site suggests an <strong>interest tribe</strong> (one of eight groups learned from the class survey), then shows <strong>event ideas and gentle next steps</strong>. Treat it like a conversation starter or bulletin board—not a label on your personality and not an official GIK system.</p>
+        <p class="guide-lead">Use the three tabs like chapters: read here first, try <strong>Student</strong> second, and open <strong>GIKI admin</strong> only if you want to practice posting an event for others to see.</p>
       </section>
 
-      <p class="guide-interactive-hint hint">Tap any heading below to open or close that part of the guide.</p>
+      <p class="guide-interactive-hint hint">Tap a heading below to expand or collapse that section.</p>
 
       <section class="card">
         <details class="guide-details">
-          <summary class="guide-summary">How to move around</summary>
+          <summary class="guide-summary">How to move around the site</summary>
           <div class="guide-details-inner">
-            <p><strong>How to use</strong> (this tab) — stays open while you read; you can come back anytime.</p>
-            <p><strong>Student</strong> — scroll from the short intro down through the numbered steps. Answer the sliders and checkboxes in order, then press <strong>Find my interest tribe</strong>. Your result appears lower on the same page: a tribe label, a row of tribe cards (yours is highlighted), suggested events, and gentle “what to try next” ideas. Use the small “On this page” links if you want to jump between intro, form, and results.</p>
-            <p><strong>GIKI admin</strong> — switch here to pretend you are campus staff: enter the admin phrase already filled in for the demo, describe an event (time, place, what it is), tick hobby tags, and optionally tick which interest tribes should see it first. Publish, then go back to <strong>Student</strong> and run the form again to see whether your event shows up in the suggestions list.</p>
+            <p><strong>How to use</strong> (this tab) — read at your own pace; you can leave and come back.</p>
+            <p><strong>Student</strong> — scroll from the top through the numbered steps. Move the sliders and tick hobbies so they feel true for you right now, then press <strong>Find my interest tribe</strong> once. Your result appears further down the same page: which tribe you sit closest to, a map of all tribes (yours is outlined), sample events that fit your interests, and simple ideas for what to try next. The “On this page” row is a shortcut if you want to jump to a section.</p>
+            <p><strong>GIKI admin</strong> — use this only to play “staff for a minute.” The demo password is already filled in. Write a pretend event (what, when, where), pick hobbies it suits, and optionally pick which tribes should see it near the top of their list. After you publish, go back to <strong>Student</strong>, run the form again, and check whether your event appears in the suggestions.</p>
           </div>
         </details>
       </section>
@@ -242,36 +244,37 @@
         <details class="guide-details" open>
           <summary class="guide-summary">What your tribe result depends on</summary>
           <div class="guide-details-inner">
-            <p>When you press <strong>Find my interest tribe</strong>, the demo places you in <strong>one of eight interest tribes</strong> that were learned ahead of time from the course survey. That placement is driven only by what you enter on the form in this order of importance:</p>
+            <p>When you press <strong>Find my interest tribe</strong>, the demo compares your answers to <strong>eight interest tribes</strong> that were worked out once from the course survey. Think of it as “which crowd’s habits are closest to yours this week,” not a grade on your character. These parts of the form matter for that match:</p>
             <ul class="guide-list">
               <li>The <strong>hobbies</strong> you tick.</li>
-              <li><strong>Society hours per week</strong> (treated as zero if you say you are not a society member).</li>
-              <li>How <strong>comfortable</strong> you say you are meeting new people.</li>
-              <li>The <strong>social sliders</strong> — roughly, how tight your close-friend circle is across province and faculty, together with how many close friends you say you have.</li>
+              <li><strong>How many society hours</strong> you say you put in each week (counted as zero if you say you are not in a society).</li>
+              <li>How <strong>comfortable</strong> you feel meeting students from other provinces.</li>
+              <li>The <strong>friendship sliders</strong> — together they describe whether your close friends are mostly from the same province or faculty, alongside how many close friends you say you have.</li>
             </ul>
-            <p><strong>What does not change the tribe number in this demo:</strong> the faculty and year you pick, and the named societies you tick. Those answers travel with your submission so a reader can see the full story, but they are not part of the eight-tribe grouping unless the project is rebuilt with new analysis.</p>
+            <p><strong>What does not change the tribe in this demo:</strong> faculty, year of study, and the named societies you tick. Those fields are there so your story feels complete on the page and in a report; they are not used to move you into a different tribe unless the project is rebuilt with new rules.</p>
           </div>
         </details>
       </section>
 
       <section class="card">
         <details class="guide-details">
-          <summary class="guide-summary">What you can get to know</summary>
+          <summary class="guide-summary">How this helps you (and what to remember)</summary>
           <div class="guide-details-inner">
-            <p><strong>Big picture.</strong> The project talks about living on a residential campus but still forming small circles by faculty, home region, or batch; how societies and shared hobbies can act as a bridge; and how “interest tribes” describe taste and habits rather than copying demographics.</p>
-            <p><strong>From the numbers at the top of Student.</strong> You see how many anonymised profiles sit in the survey pool, that there are eight tribes, and that the match is grounded in coursework data—not a random picker.</p>
-            <p><strong>After you run the form.</strong> You see which tribe you landed in, a plain-language line about how tight your social picture looks, event ideas matched to that tribe and your hobbies, and anonymised “say hi” style prompts. The expandable notes under the result explain, in words, how the tribe was chosen without asking you to trust a black box.</p>
-            <p><strong>Behind the scenes (one sentence).</strong> The survey analysis and tribe labels were finished once for the course; this site applies that same grouping and adds readable suggestions on top — it does not relearn from your clicks while you explore.</p>
+            <p><strong>Why it exists.</strong> Many students feel their week shrink to the same faces. This demo names that pattern in a friendly way and nudges you toward <strong>hobbies, societies, and small plans</strong> that are easier to try than a vague “be more social.”</p>
+            <p><strong>What you learn from the numbers on Student.</strong> The counts at the top remind you that the tribes come from a <strong>real class survey</strong> (names removed)—so the match is grounded in data, not a random game.</p>
+            <p><strong>What you get after you press the button.</strong> A tribe label you can compare to the map, a short read on how tight or open your answers look, events that line up with your ticks, and anonymised “people like this cluster” prompts you can treat as icebreakers—not real identities.</p>
+            <p><strong>Keep perspective.</strong> One run does not define you. Faculty, year, and society names on the form are for your story and the write-up; they do not change the tribe number in this demo. The suggestions are <strong>hints</strong>; use judgment and follow real campus notices for anything official.</p>
           </div>
         </details>
       </section>
 
       <section class="card">
         <details class="guide-details">
-          <summary class="guide-summary">If the page or button does not work</summary>
+          <summary class="guide-summary">If the button does nothing or the page feels “stuck”</summary>
           <div class="guide-details-inner">
-            <p>The demo needs the small program that ships with the project to be running on your computer. Start it the way your instructor or README describes (for example the <strong>START_APP</strong> shortcut or running the main server script). A message in the same window will show a <strong>local web address</strong> — open that exact address in your browser and use the site from there.</p>
-            <p>If you opened the web page from a preview inside an editor, or by double-clicking a file in a folder, the button may not respond. Close that tab, start the program, and open only the address the program tells you. If an old tab is stuck, try a full refresh or open the address again in a new tab.</p>
+            <p>The demo needs the small program that comes with the project to be running on your computer. Start it the way your README or instructor says (for example a <strong>START_APP</strong> shortcut). A line in that same window shows a <strong>local web address</strong> — copy it into the browser and use the site from that address.</p>
+            <p>If you opened the page from a file folder or a built-in preview, the form may not reach the demo server. Close that tab, start the program, and open only the address the program prints. If an old tab misbehaves, refresh or open a new tab to the same address.</p>
+            <p>If you usually preview HTML inside an editor, ask your instructor whether you need a special link so the preview can talk to the running demo.</p>
           </div>
         </details>
       </section>
@@ -281,7 +284,10 @@
       <section class="card tribe-atlas">
         <h2>Interest tribes (for event targeting)</h2>
         <p class="hint">
-          Each card is one <strong>interest tribe</strong> (numbered <strong>0–7</strong>) from the same survey analysis as the student demo. Optional <em>target tribes</em> prioritise those students; <strong>hobby tags</strong> alone still work for matching.
+          There are <strong>eight</strong> tribes, numbered <strong>0 through 7</strong> — same names and headcounts as on the Student tab. <strong>Scroll</strong> the row of cards to see every tribe before you tick targets below.
+        </p>
+        <p class="hint">
+          When you publish an event, optional <em>target tribes</em> move it higher on matching students&apos; lists; <strong>hobby tags</strong> still do the main matching. Cards show a one-line idea for the kind of mixer that fits that tribe.
         </p>
         <div id="admin-tribe-cards" class="tribe-atlas-grid"></div>
       </section>
@@ -311,7 +317,7 @@
         </div>
         <p class="hint">Hobbies this event fits (student matching):</p>
         <div class="hobby-grid" id="admin-hobby-grid"></div>
-        <p class="hint" style="margin-top:1rem"><strong>Target tribes</strong> (optional — use the cards above as a cheat sheet):</p>
+        <p class="hint" style="margin-top:1rem"><strong>Target tribes</strong> (optional — tick any of IDs <strong>0–7</strong> to match the cards above):</p>
         <div class="cluster-picks" id="cluster-picks"></div>
         <button type="button" class="primary" id="admin-submit">Publish event</button>
         <p class="error" id="admin-error" role="alert"></p>

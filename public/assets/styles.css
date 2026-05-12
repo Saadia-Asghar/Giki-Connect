@@ -1567,6 +1567,10 @@ button.primary:disabled {
   font-size: 0.95rem;
 }
 
+.guide-lead + .guide-lead {
+  margin-top: 0.65rem;
+}
+
 .guide-list,
 .guide-steps {
   margin: 0;

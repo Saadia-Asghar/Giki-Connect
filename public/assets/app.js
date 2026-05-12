@@ -663,7 +663,11 @@ function setupTabs() {
       pStudent.setAttribute("aria-hidden", name === "student" ? "false" : "true");
       pGuide.setAttribute("aria-hidden", name === "guide" ? "false" : "true");
       pAdmin.setAttribute("aria-hidden", name === "admin" ? "false" : "true");
-      if (name === "admin") loadAdminEvents();
+      if (name === "admin") {
+        renderAdminTribeAtlas();
+        buildClusterPicks();
+        loadAdminEvents();
+      }
     });
   });
 }

@@ -397,6 +397,19 @@ def silo_index_from_report(friends: float, same_prov_pct: float, same_fac_pct: f
     return round(max(0.0, min(1.0, n_or / t)), 3)
 
 
+def _polish_tribe_display_fields(prof: dict) -> None:
+    """Notebook CSV uses 'Coding  Programming'; UI and forms use slashes."""
+    name = prof.get("name")
+    if isinstance(name, str):
+        prof["name"] = name.replace("Coding  Programming", "Coding / Programming")
+    tops = prof.get("top_hobbies")
+    if isinstance(tops, list):
+        prof["top_hobbies"] = [
+            h.replace("Coding  Programming", "Coding / Programming") if isinstance(h, str) else h
+            for h in tops
+        ]
+
+
 def load_artifacts():
     global km_model, scaler, feature_cols, cluster_profiles
     km_model = joblib.load(MODEL_DIR / "kmeans.pkl")
@@ -404,6 +417,9 @@ def load_artifacts():
     feature_cols = joblib.load(MODEL_DIR / "feature_cols.pkl")
     with open(MODEL_DIR / "cluster_profiles.json", encoding="utf-8") as f:
         cluster_profiles = json.load(f)
+    for prof in cluster_profiles.values():
+        if isinstance(prof, dict):
+            _polish_tribe_display_fields(prof)
 
 
 def _unique_csv_column(path: Path, column: str) -> list[str]:

@@ -46,10 +46,19 @@ const SOCIETIES = [
   "Women Engineers Society",
 ];
 
-const TRIBE_ACCENT = ["#7c1d3a", "#9c2748", "#a8556f", "#b45309"];
+const TRIBE_ACCENT = [
+  "#7c1d3a",
+  "#9c2748",
+  "#a8556f",
+  "#b45309",
+  "#0f766e",
+  "#1d4ed8",
+  "#6d28d9",
+  "#b91c1c",
+];
 
 const ATLAS_INTRO_DEFAULT =
-  'Each card is one <strong>interest tribe</strong> (numbered <strong>0–3</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.';
+  'Each card is one <strong>interest tribe</strong> (numbered <strong>0–7</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.';
 
 /** @type {null | Record<string, unknown>} */
 let tribesData = null;
@@ -203,7 +212,10 @@ function buildClusterPicks() {
   const box = el("cluster-picks");
   if (!box) return;
   box.innerHTML = "";
-  for (let c = 0; c < 4; c++) {
+  const n =
+    (tribesData?.tribes && tribesData.tribes.length) ||
+    (metaData?.k_clusters != null ? Number(metaData.k_clusters) : 8);
+  for (let c = 0; c < n; c++) {
     const lab = document.createElement("label");
     const inp = document.createElement("input");
     inp.type = "checkbox";
@@ -243,7 +255,7 @@ function renderTribeGrid(containerId) {
     const card = document.createElement("article");
     card.className = "tribe-mini-card";
     card.dataset.tribeId = String(t.id);
-    card.style.borderLeftColor = TRIBE_ACCENT[t.id % 4] || TRIBE_ACCENT[0];
+    card.style.borderLeftColor = TRIBE_ACCENT[t.id % TRIBE_ACCENT.length] || TRIBE_ACCENT[0];
     const tops = (t.top_hobbies || []).join(", ");
     card.setAttribute("role", "group");
     card.setAttribute(
@@ -499,7 +511,7 @@ async function predict() {
       setAtlasIntro(ATLAS_INTRO_DEFAULT);
       return;
     }
-    const k = tribesData?.tribes?.length ?? 4;
+    const k = tribesData?.tribes?.length ?? (metaData?.k_clusters != null ? Number(metaData.k_clusters) : 8);
     const pill = el("tribe-id-pill");
     if (pill) {
       pill.textContent = `Tribe ID ${data.cluster}`;

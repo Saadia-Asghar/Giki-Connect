@@ -66,12 +66,16 @@ _cohort: list[dict] = []
 _FORM_FACULTIES: list[str] = []
 _FORM_YEARS: list[str] = []
 
-# Shown in /api/tribes — helps admins map events to K-Means clusters (ids 0–3).
+# Shown in /api/tribes — helps admins map events to clusters (ids 0–7 when K=8).
 TRIBE_ADMIN_GUIDE = {
-    "0": "Strong on skating, music, cooking vibes — rink outings, open-mic, potluck-style mixers.",
-    "1": "Debating, art, fitness — talks, gallery walks, gym challenges across faculties.",
-    "2": "Gaming, music, travel — LAN cafés, rhythm-game corners, trip-planning meetups.",
-    "3": "Cooking, music, hiking — food collabs, trail days, low-key acoustic hikes.",
+    "0": "Music & fitness crossover — gym playlists, short acoustic sets after workouts.",
+    "1": "Football & music — small-sided pitch sessions plus shared playlists or half-time debriefs.",
+    "2": "Cooking & reading — themed potlucks with a short book or article to react to together.",
+    "3": "Art & coding — maker tables, sketch jams, or light prototyping sprints in pairs.",
+    "4": "Cricket & music — nets or fielding drills with a relaxed music corner between overs.",
+    "5": "Debating & hiking — trail walks with one structured prompt or timed mini-debates at the top.",
+    "6": "Music & travel — trip-planning cafés, budget-hack boards, playlist swaps before breaks.",
+    "7": "Skating & art — rink meetups plus quick sketch prompts or photo walks nearby.",
 }
 
 # Student-facing copy aligned with the course proposal (siloing, society bridge, interest-led ties).

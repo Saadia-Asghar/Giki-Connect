@@ -420,6 +420,12 @@ h1 {
   }
 }
 
+@media (min-width: 960px) {
+  .tribe-atlas-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .tribe-mini-card {
   position: relative;
   padding: 0.95rem 1rem;

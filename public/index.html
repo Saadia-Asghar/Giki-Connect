@@ -34,7 +34,7 @@
         <div class="badge">Live Demo · Theory of Data Science · GIKI</div>
         <h1 class="demo-title">Find Your Interest Tribe</h1>
         <p class="demo-lead">Work through the steps in order, then press the button once. Your tribe and suggestions appear further down the page.</p>
-        <p class="demo-blurb"><strong>Honest scope:</strong> your <strong>hobbies, society hours, comfort meeting new people,</strong> and <strong>how concentrated your close friendships are</strong> decide which of <strong>four interest tribes</strong> you match. Faculty, year, and society names are optional context for you—they do <em>not</em> change that tribe number in this demo.</p>
+        <p class="demo-blurb"><strong>Honest scope:</strong> your <strong>hobbies, society hours, comfort meeting new people,</strong> and <strong>how concentrated your close friendships are</strong> decide which of <strong>eight interest tribes</strong> you match. Faculty, year, and society names are optional context for you—they do <em>not</em> change that tribe number in this demo.</p>
         <div class="demo-stats" id="demo-stats" aria-live="polite">
           <p class="hint">Loading stats…</p>
         </div>
@@ -50,7 +50,7 @@
           <a class="jump-chip" href="#step-societies">4 · Societies</a>
           <a class="jump-chip" href="#step-hobbies">5 · Hobbies</a>
           <a class="jump-chip jump-chip--results is-disabled" href="#student-results" id="jump-to-results" aria-disabled="true" title="Available after you find your tribe">Results</a>
-          <a class="jump-chip" href="#tribe-atlas-public">4 tribes map</a>
+          <a class="jump-chip" href="#tribe-atlas-public">Tribe map</a>
         </div>
       </nav>
 
@@ -158,7 +158,7 @@
             <a class="quick-link" href="#tribe-atlas-public">Map</a>
           </nav>
           <div class="result-hero-actions">
-            <button type="button" class="btn-text" id="scroll-to-atlas">Jump to four-tribe map</button>
+            <button type="button" class="btn-text" id="scroll-to-atlas">Jump to tribe map</button>
             <button type="button" class="btn-text btn-text--secondary" id="try-another-mix">Change hobbies &amp; run again</button>
           </div>
         </header>
@@ -203,7 +203,7 @@
         <section class="result-sub result-next" id="result-more">
           <h3 class="result-section-label">Same tribe, different faces</h3>
           <p class="hint tight">Same tribe as you in the survey list—broad vibe match. Use the hobby matches above for specific icebreakers.</p>
-          <p class="hint tight">Scroll down to the map: <strong>your tribe card stays outlined in rose</strong> after each run so you can compare all four at a glance.</p>
+          <p class="hint tight">Scroll down to the map: <strong>your tribe card stays outlined in rose</strong> after each run so you can compare all tribes at a glance.</p>
         </section>
 
         <p class="result-provenance" id="result-provenance"></p>
@@ -211,9 +211,9 @@
       </section>
 
       <section class="card tribe-showcase-card" id="tribe-atlas-public">
-        <h2>The 4 interest tribes at GIKI</h2>
+        <h2>The 8 interest tribes at GIKI</h2>
         <p class="hint tribe-atlas-intro" id="tribe-atlas-intro">
-          Each card is one <strong>interest tribe</strong> (numbered <strong>0–3</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.
+          Each card is one <strong>interest tribe</strong> (numbered <strong>0–7</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.
         </p>
         <div id="public-tribe-cards" class="tribe-atlas-grid"></div>
       </section>
@@ -232,7 +232,7 @@
           <summary class="guide-summary">How to move around</summary>
           <div class="guide-details-inner">
             <p><strong>How to use</strong> (this tab) — stays open while you read; you can come back anytime.</p>
-            <p><strong>Student</strong> — scroll from the short intro down through the numbered steps. Answer the sliders and checkboxes in order, then press <strong>Find my interest tribe</strong>. Your result appears lower on the same page: a tribe label, a row of four cards (yours is highlighted), suggested events, and gentle “what to try next” ideas. Use the small “On this page” links if you want to jump between intro, form, and results.</p>
+            <p><strong>Student</strong> — scroll from the short intro down through the numbered steps. Answer the sliders and checkboxes in order, then press <strong>Find my interest tribe</strong>. Your result appears lower on the same page: a tribe label, a row of tribe cards (yours is highlighted), suggested events, and gentle “what to try next” ideas. Use the small “On this page” links if you want to jump between intro, form, and results.</p>
             <p><strong>GIKI admin</strong> — switch here to pretend you are campus staff: enter the admin phrase already filled in for the demo, describe an event (time, place, what it is), tick hobby tags, and optionally tick which interest tribes should see it first. Publish, then go back to <strong>Student</strong> and run the form again to see whether your event shows up in the suggestions list.</p>
           </div>
         </details>
@@ -242,14 +242,14 @@
         <details class="guide-details" open>
           <summary class="guide-summary">What your tribe result depends on</summary>
           <div class="guide-details-inner">
-            <p>When you press <strong>Find my interest tribe</strong>, the demo places you in <strong>one of four interest tribes</strong> that were learned ahead of time from the course survey. That placement is driven only by what you enter on the form in this order of importance:</p>
+            <p>When you press <strong>Find my interest tribe</strong>, the demo places you in <strong>one of eight interest tribes</strong> that were learned ahead of time from the course survey. That placement is driven only by what you enter on the form in this order of importance:</p>
             <ul class="guide-list">
               <li>The <strong>hobbies</strong> you tick.</li>
               <li><strong>Society hours per week</strong> (treated as zero if you say you are not a society member).</li>
               <li>How <strong>comfortable</strong> you say you are meeting new people.</li>
               <li>The <strong>social sliders</strong> — roughly, how tight your close-friend circle is across province and faculty, together with how many close friends you say you have.</li>
             </ul>
-            <p><strong>What does not change the tribe number in this demo:</strong> the faculty and year you pick, and the named societies you tick. Those answers travel with your submission so a reader can see the full story, but they are not part of the four-tribe grouping unless the project is rebuilt with new analysis.</p>
+            <p><strong>What does not change the tribe number in this demo:</strong> the faculty and year you pick, and the named societies you tick. Those answers travel with your submission so a reader can see the full story, but they are not part of the eight-tribe grouping unless the project is rebuilt with new analysis.</p>
           </div>
         </details>
       </section>
@@ -259,7 +259,7 @@
           <summary class="guide-summary">What you can get to know</summary>
           <div class="guide-details-inner">
             <p><strong>Big picture.</strong> The project talks about living on a residential campus but still forming small circles by faculty, home region, or batch; how societies and shared hobbies can act as a bridge; and how “interest tribes” describe taste and habits rather than copying demographics.</p>
-            <p><strong>From the numbers at the top of Student.</strong> You see how many anonymised profiles sit in the survey pool, that there are four tribes, and that the match is grounded in coursework data—not a random picker.</p>
+            <p><strong>From the numbers at the top of Student.</strong> You see how many anonymised profiles sit in the survey pool, that there are eight tribes, and that the match is grounded in coursework data—not a random picker.</p>
             <p><strong>After you run the form.</strong> You see which tribe you landed in, a plain-language line about how tight your social picture looks, event ideas matched to that tribe and your hobbies, and anonymised “say hi” style prompts. The expandable notes under the result explain, in words, how the tribe was chosen without asking you to trust a black box.</p>
             <p><strong>Behind the scenes (one sentence).</strong> The survey analysis and tribe labels were finished once for the course; this site applies that same grouping and adds readable suggestions on top — it does not relearn from your clicks while you explore.</p>
           </div>
@@ -281,7 +281,7 @@
       <section class="card tribe-atlas">
         <h2>Interest tribes (for event targeting)</h2>
         <p class="hint">
-          Each card is one <strong>interest tribe</strong> (numbered <strong>0–3</strong>) from the same survey analysis as the student demo. Optional <em>target tribes</em> prioritise those students; <strong>hobby tags</strong> alone still work for matching.
+          Each card is one <strong>interest tribe</strong> (numbered <strong>0–7</strong>) from the same survey analysis as the student demo. Optional <em>target tribes</em> prioritise those students; <strong>hobby tags</strong> alone still work for matching.
         </p>
         <div id="admin-tribe-cards" class="tribe-atlas-grid"></div>
       </section>

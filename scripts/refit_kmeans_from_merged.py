@@ -57,7 +57,7 @@ def main() -> None:
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    K = 4
+    K = 8
     km_model = KMeans(n_clusters=K, random_state=42, n_init=20)
     km_model.fit(X_scaled)
     tr["Cluster"] = km_model.labels_

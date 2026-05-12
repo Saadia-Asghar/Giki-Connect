@@ -34,7 +34,7 @@ Or double-click **`START_APP.bat`**. Leave the console open while you use the ap
 
 ## Admin events
 
-1. Open the app → **GIKI admin** tab — use **Interest tribes** (ids **0–3**, names from `cluster_profiles.json`) when posting.  
+1. Open the app → **GIKI admin** tab — use **Interest tribes** (ids **0–7**, names from `cluster_profiles.json`) when posting.  
 2. Default token: **`giki-admin-demo`** (override with env **`GIKI_ADMIN_TOKEN`**).  
 3. Post title, time, place, description, **hobby tags**, and optionally **target tribes** so the right students see the event first.  
 4. Events live in **`data/events.json`**. `GET /api/tribes` feeds the tribe cards + short “project context” copy on the student tab.

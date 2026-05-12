@@ -16,8 +16,7 @@ const HOBBIES = [
 ];
 
 /**
- * GIK Institute student societies (Campus Life → Student Societies), plus common tech clubs.
- * Chips only — echoed in API as submitted.societies; not used by K-Means unless you retrain.
+ * Optional society chips — saved with the form; they do not change the tribe number in this demo.
  */
 const SOCIETIES = [
   "ACM (GIK chapter)",
@@ -50,7 +49,7 @@ const SOCIETIES = [
 const TRIBE_ACCENT = ["#7c1d3a", "#9c2748", "#a8556f", "#b45309"];
 
 const ATLAS_INTRO_DEFAULT =
-  'Each card is one <strong>K-Means cluster</strong> (IDs <strong>0–3</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.';
+  'Each card is one <strong>interest tribe</strong> (numbered <strong>0–3</strong>). After you run the form, <strong>your tribe card is outlined in rose</strong> so you always know which one is yours.';
 
 /** @type {null | Record<string, unknown>} */
 let tribesData = null;
@@ -60,6 +59,71 @@ let metaData = null;
 
 function el(id) {
   return document.getElementById(id);
+}
+
+/**
+ * When the HTML is not served by Flask (Live Preview, opening the file, another port),
+ * API calls must target the Flask origin. Set once via ?api=http://127.0.0.1:8765 (no trailing slash);
+ * stored in localStorage. Optional: data-api-base on the html element, or meta name="giki-api-base".
+ */
+function getApiBase() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("api");
+    if (q) {
+      const normalized = String(q).trim().replace(/\/$/, "");
+      if (normalized) {
+        try {
+          localStorage.setItem("gikiApiBase", normalized);
+          const u = new URL(window.location.href);
+          u.searchParams.delete("api");
+          const tail = `${u.pathname}${u.search}${u.hash}`;
+          window.history.replaceState({}, "", tail || "/");
+        } catch (_) {
+          /* ignore */
+        }
+        return normalized;
+      }
+    }
+  } catch (_) {
+    /* ignore */
+  }
+  try {
+    const ls = localStorage.getItem("gikiApiBase");
+    if (ls) return String(ls).trim().replace(/\/$/, "");
+  } catch (_) {
+    /* ignore */
+  }
+  const ds = document.documentElement?.dataset?.apiBase;
+  if (ds) return String(ds).trim().replace(/\/$/, "");
+  const meta = document.querySelector('meta[name="giki-api-base"]');
+  if (meta?.content) return String(meta.content).trim().replace(/\/$/, "");
+  return "";
+}
+
+function apiUrl(path) {
+  const base = getApiBase();
+  const p = path.startsWith("/") ? path : `/${path}`;
+  if (!base) return p;
+  return `${base}${p}`;
+}
+
+/** Parse JSON body; Flask sometimes returned HTML on 500, which made r.json() throw. */
+async function readResponseJson(r) {
+  const text = await r.text();
+  if (!text.trim()) {
+    return { ok: true, data: {} };
+  }
+  try {
+    return { ok: true, data: JSON.parse(text) };
+  } catch {
+    return {
+      ok: false,
+      data: {},
+      parseError: true,
+      snippet: text.slice(0, 160).replace(/\s+/g, " "),
+    };
+  }
 }
 
 function setResultsJumpAvailable(on) {
@@ -72,7 +136,7 @@ function setResultsJumpAvailable(on) {
     a.removeAttribute("title");
   } else {
     a.setAttribute("tabindex", "-1");
-    a.setAttribute("title", "Run the model first — then use this link to jump to your results.");
+    a.setAttribute("title", "Find your tribe first — then use this link to jump to your results.");
   }
 }
 
@@ -189,7 +253,7 @@ function renderTribeGrid(containerId) {
     card.innerHTML = `
       <div class="tribe-mini-id">Tribe ID ${t.id}</div>
       <h4 class="tribe-mini-name">${escapeHtml(t.name)}</h4>
-      <p class="tribe-mini-stats">${t.n} students in sample · avg friendship concentration ${t.avg_silo}</p>
+      <p class="tribe-mini-stats">${t.n} people in survey sample · avg friendship concentration ${t.avg_silo}</p>
       <p class="tribe-mini-tops">Top hobbies: <strong>${escapeHtml(tops)}</strong></p>
       <p class="tribe-mini-guide">${escapeHtml(t.admin_guide || "")}</p>
     `;
@@ -293,7 +357,7 @@ function renderPeerList(peers) {
     const tag =
       shared !== "—"
         ? `Often joins ${escapeHtml(topH)} circles; overlaps with you on ${escapeHtml(shared)}.`
-        : "Same cluster in the training sample—use society or hobby channels for a soft hello.";
+        : "Same tribe in the survey list—use society or hobby channels for a soft hello.";
     const yr = p.year ? ` · ${escapeHtml(String(p.year))}` : "";
     const soc =
       p.society_cue &&
@@ -383,9 +447,9 @@ function renderResultStatChips(data) {
   const ch = data.comfort_used != null ? String(data.comfort_used) : "—";
   const sh = data.soc_hours_used != null ? String(data.soc_hours_used) : "—";
   root.innerHTML = `
-    <li><span class="stat-chip-k">Training n</span><span class="stat-chip-v">${escapeHtml(String(data.tribe_size))}</span></li>
-    <li><span class="stat-chip-k">Cohort avg silo</span><span class="stat-chip-v">${escapeHtml(String(data.tribe_avg_silo))}</span></li>
-    <li><span class="stat-chip-k">Your silo</span><span class="stat-chip-v">${escapeHtml(String(data.silo_index))}</span></li>
+    <li><span class="stat-chip-k">People in tribe</span><span class="stat-chip-v">${escapeHtml(String(data.tribe_size))}</span></li>
+    <li><span class="stat-chip-k">Tribe avg. focus</span><span class="stat-chip-v">${escapeHtml(String(data.tribe_avg_silo))}</span></li>
+    <li><span class="stat-chip-k">Your focus</span><span class="stat-chip-v">${escapeHtml(String(data.silo_index))}</span></li>
     <li><span class="stat-chip-k">Comfort</span><span class="stat-chip-v">${escapeHtml(ch)}</span></li>
     <li><span class="stat-chip-k">Soc. h/wk</span><span class="stat-chip-v">${escapeHtml(sh)}</span></li>
   `;
@@ -408,14 +472,26 @@ async function predict() {
   const btn = el("submit");
   btn.disabled = true;
   try {
-    const r = await fetch("/api/predict", {
+    const r = await fetch(apiUrl("/api/predict"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const data = await r.json();
+    const parsed = await readResponseJson(r);
+    if (!parsed.ok) {
+      err.textContent = r.ok
+        ? `Unexpected response (not JSON). ${parsed.snippet || ""}`
+        : `Server error ${r.status} (non-JSON body — often an old Flask process). Stop the server (Ctrl+C), run python app_server.py again, hard-refresh the page (Ctrl+F5). ${parsed.snippet || ""}`;
+      el("result").classList.add("hidden");
+      const provErr = el("result-provenance");
+      if (provErr) provErr.textContent = "";
+      setResultsJumpAvailable(false);
+      setAtlasIntro(ATLAS_INTRO_DEFAULT);
+      return;
+    }
+    const data = parsed.data;
     if (!r.ok) {
-      err.textContent = data.error || "Request failed";
+      err.textContent = data.error || `Request failed (${r.status})`;
       el("result").classList.add("hidden");
       const provErr = el("result-provenance");
       if (provErr) provErr.textContent = "";
@@ -429,16 +505,16 @@ async function predict() {
       pill.textContent = `Tribe ID ${data.cluster}`;
       pill.setAttribute(
         "aria-label",
-        `Your K-Means tribe identifier is ${data.cluster}. There are ${k} clusters, numbered 0 through ${k - 1}.`,
+        `Your interest tribe number is ${data.cluster}. There are ${k} tribes, numbered 0 through ${k - 1}.`,
       );
     }
     el("tribe-title").textContent = data.tribe_name;
     el("result-kicker").textContent = "Your match";
-    el("result-tagline").textContent = `Tribe ID ${data.cluster} of ${k}. Next: hobbies in this cluster, then events and people picked for you.`;
+    el("result-tagline").textContent = `Tribe ${data.cluster} of ${k}. Next: top hobbies in this tribe, then events and people picked for you.`;
     const prov = el("result-provenance");
     if (prov) {
       prov.textContent =
-        `Tribe names and cohort stats come from output/model/cluster_profiles.json — the same export as GIKI_Connect_Notebook.`;
+        "Tribe names and group sizes come from the same saved survey analysis as the course write-up.";
     }
     renderResultStatChips(data);
     el("silo-fill").style.width = `${Math.min(100, Number(data.silo_index) * 100)}%`;
@@ -473,8 +549,10 @@ async function predict() {
     }, 900);
     resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) {
-    err.textContent =
-      "Cannot reach the server. Run START_APP.bat or python app_server.py.";
+    const msg = e instanceof TypeError && String(e.message || "").includes("fetch")
+      ? "Network error — is Flask running? Start python app_server.py, use the URL it prints, or add ?api=http://127.0.0.1:PORT for Live Preview."
+      : `Something went wrong: ${e instanceof Error ? e.message : String(e)}`;
+    err.textContent = msg;
     el("result").classList.add("hidden");
     const provCatch = el("result-provenance");
     if (provCatch) provCatch.textContent = "";
@@ -487,7 +565,7 @@ async function predict() {
 
 async function loadAdminEvents() {
   try {
-    const r = await fetch("/api/events");
+    const r = await fetch(apiUrl("/api/events"));
     const data = await r.json();
     renderEvents("admin-event-list", data.events || []);
   } catch {
@@ -519,7 +597,7 @@ async function adminPostEvent() {
   const btn = el("admin-submit");
   btn.disabled = true;
   try {
-    const r = await fetch("/api/events", {
+    const r = await fetch(apiUrl("/api/events"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -580,7 +658,7 @@ function setupTabs() {
 
 async function loadTribesContext() {
   try {
-    const r = await fetch("/api/tribes");
+    const r = await fetch(apiUrl("/api/tribes"));
     if (r.ok) tribesData = await r.json();
   } catch {
     tribesData = null;
@@ -589,7 +667,7 @@ async function loadTribesContext() {
 
 async function loadMeta() {
   try {
-    const r = await fetch("/api/meta");
+    const r = await fetch(apiUrl("/api/meta"));
     if (r.ok) metaData = await r.json();
   } catch {
     metaData = null;
@@ -603,15 +681,10 @@ function renderDemoStats() {
     root.innerHTML = "<p class=\"hint\">Stats unavailable (is the server running?).</p>";
     return;
   }
-  const pca =
-    metaData.pca_variance_pct != null
-      ? `${escapeHtml(String(metaData.pca_variance_pct))}%`
-      : "—";
   root.innerHTML = `
-    <div class="stat"><strong>${escapeHtml(String(metaData.total_profiles))}</strong><span>profiles in cohort</span></div>
-    <div class="stat"><strong>${escapeHtml(String(metaData.k_clusters))}</strong><span>clusters (K-Means)</span></div>
-    <div class="stat"><strong>${escapeHtml(String(metaData.n_features))}</strong><span>features in model</span></div>
-    <div class="stat"><strong>${pca}</strong><span>PCA variance (2D viz)</span></div>
+    <div class="stat"><strong>${escapeHtml(String(metaData.total_profiles))}</strong><span>profiles in survey pool</span></div>
+    <div class="stat"><strong>${escapeHtml(String(metaData.k_clusters))}</strong><span>interest tribes</span></div>
+    <div class="stat"><strong>Survey-based</strong><span>hobbies, society time, comfort &amp; friendships</span></div>
   `;
 }
 

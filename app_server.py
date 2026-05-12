@@ -13,6 +13,7 @@ import json
 import os
 import shutil
 import socket
+from urllib.parse import urlparse
 import threading
 import time
 import uuid
@@ -94,6 +95,14 @@ CAMPUS_CONTEXT = {
         "If you already are in a society, bring one friend who is not; international and junior-year students often benefit most from that invite.",
     ],
 }
+
+
+def _year_display_label(raw: str) -> str:
+    """Friendly year label for forms and cards (cohort CSV may use longer wording)."""
+    s = (raw or "").strip()
+    if s == "1st Year (Freshie)":
+        return "1st Year"
+    return s
 
 
 def hobby_col(h: str) -> str:
@@ -220,7 +229,7 @@ def build_insight_sections(
     member_txt = "yes" if soc_member else "no"
     hobby_list = ", ".join(hobbies[:10]) + ("…" if len(hobbies) > 10 else "")
     key_bullets: list[str] = [
-        f"Your inputs this run: comfort {cm:.0f}/5; society member {member_txt}, society hours {sh:.1f} h/wk sent to the model; "
+        f"Your inputs this run: comfort {cm:.0f}/5; society member {member_txt}, society hours {sh:.1f} h/wk used for your tribe match; "
         f"{len(hobbies)} hobby pick(s): {hobby_list}; ~{fr:.1f} close friends; {sp:.0f}% same-province and {sf:.0f}% same-faculty among close friends "
         f"→ silo index {silo:.3f} ({silo_lbl}).",
     ]
@@ -282,7 +291,7 @@ def build_insight_sections(
     if soc_member:
         if chips:
             society_bullets.append(
-                f"You listed society chips: {', '.join(chips)} — not fed into K-Means today; they only shape this narrative."
+                f"You listed society chips: {', '.join(chips)} — they do not change your tribe number here; they only shape this narrative."
             )
         else:
             society_bullets.append(
@@ -298,7 +307,7 @@ def build_insight_sections(
             )
     else:
         society_bullets.append(
-            "You chose not a society member — society hours were forced to 0 for the model; chips are ignored here."
+            "You chose not a society member — society hours are counted as zero for your tribe match; chips are ignored here."
         )
         if sh == 0:
             society_bullets.append(
@@ -317,20 +326,20 @@ def build_insight_sections(
     society_bullets = society_bullets[:5]
 
     cohort_bullets = [
-        f"This tribe ({prof.get('name', '')}) averages {cohort_silo:.3f} friendship concentration in the training sample; "
+        f"This tribe ({prof.get('name', '')}) averages {cohort_silo:.3f} friendship concentration in the survey sample; "
         f"your silo from this form is {silo:.3f} ({silo_lbl}), Δ vs cohort ≈ {delta:+.3f}.",
     ]
     if delta > 0.08:
         cohort_bullets.append(
-            "That puts you above this tribe’s cohort average—structured activities may feel easier than very open rooms."
+            "That puts you above this tribe’s survey average—structured activities may feel easier than very open rooms."
         )
     elif delta < -0.08:
         cohort_bullets.append(
-            "That puts you below this tribe’s cohort average—strong footing for small hobby-led hangs that widen others’ circles."
+            "That puts you below this tribe’s survey average—strong footing for small hobby-led hangs that widen others’ circles."
         )
     else:
         cohort_bullets.append(
-            "You are near this tribe’s average—blend familiar faces with one new context when you plan the week."
+            "You are near this tribe’s survey average—blend familiar faces with one new context when you plan the week."
         )
 
     picked_shapes = _score_event_shapes(hobbies, silo, comfort)
@@ -340,7 +349,7 @@ def build_insight_sections(
             "id": "key_pointers",
             "title": "Key pointers",
             "bullets": key_bullets,
-            "footnote": "Derived from your sliders, comfort score, and this cluster’s cohort averages in the training CSV—not a clinical assessment.",
+            "footnote": "Derived from your sliders, comfort score, and this tribe’s averages in the survey sample—not a clinical assessment.",
         },
         {
             "id": "hobby_formats",
@@ -354,13 +363,13 @@ def build_insight_sections(
         },
         {
             "id": "cohort_compare",
-            "title": "You vs this tribe’s training sample",
+            "title": "You vs this tribe in the survey data",
             "bullets": cohort_bullets,
         },
         {
             "id": "event_shapes",
             "title": "Event shapes that tend to fit",
-            "subtitle": "Ranked from your checked hobbies plus silo/comfort—not from tribe ID alone.",
+            "subtitle": "Ranked from your hobbies and how open or tight your friendship pattern feels—not from the tribe name alone.",
             "bullets": picked_shapes,
         },
     ]
@@ -420,22 +429,15 @@ def load_cohort():
                 continue
             _cohort.append(row)
     _FORM_FACULTIES = _unique_csv_column(COHORT_CSV, "Faculty")
-    _FORM_YEARS = _unique_csv_column(COHORT_CSV, "Year")
+    _FORM_YEARS = sorted({_year_display_label(y) for y in _unique_csv_column(COHORT_CSV, "Year")})
 
 
 def training_meta() -> dict:
     """Live numbers for demo banner — matches saved model & cohort."""
     total_n = sum(int(p["n"]) for p in cluster_profiles.values())
-    pca_pct: float | None = None
-    pca_path = MODEL_DIR / "pca.pkl"
-    if pca_path.is_file():
-        pca = joblib.load(pca_path)
-        pca_pct = round(float(sum(pca.explained_variance_ratio_)) * 100, 2)
     return {
         "k_clusters": len(cluster_profiles),
         "total_profiles": total_n,
-        "n_features": len(feature_cols),
-        "pca_variance_pct": pca_pct,
     }
 
 
@@ -483,7 +485,7 @@ def suggest_peers(cluster: int, hobbies: list[str], limit: int = 6) -> list[dict
                     "display": display,
                     "faculty": row.get("Faculty", ""),
                     "province": row.get("Province", ""),
-                    "year": (row.get("Year") or "").strip(),
+                    "year": _year_display_label(str(row.get("Year") or "")),
                     "hobbies_preview": ", ".join(sorted(theirs)[:6]),
                     "shared_hobbies": sorted(want & theirs),
                     "overlap": overlap,
@@ -572,7 +574,7 @@ def predict_row(
     prof = cluster_profiles[str(cluster)]
     if silo > 0.5:
         rec = (
-            f"Silo index {silo:.2f} ({silo_lbl}) from your {sp:.0f}% / {sf:.0f}% / ~{fr:.0f} friends inputs looks concentrated—"
+            f"Silo index {silo:.2f} ({silo_lbl}) from your {same_prov_pct:.0f}% / {same_fac_pct:.0f}% / ~{friends:.0f} friends inputs looks concentrated—"
             "try one society taster or cross-faculty mixer this week and add one contact outside your usual batch."
         )
     elif (not soc_member) or soc_hours < 1.0:
@@ -606,17 +608,16 @@ def predict_row(
         "title": "How your tribe was chosen",
         "lines": [
             (
-                f"You are in cluster ID {cluster} (out of {k_all}). The friendly name \"{prof['name']}\" and the "
-                f"{prof['n']} students in sample line come from output/model/cluster_profiles.json — the same export the notebook uses to label tribes."
+                f"You are in tribe {cluster} (out of {k_all}). The name \"{prof['name']}\" and the "
+                f"{prof['n']} people in that group come from the same survey analysis that powers this demo."
             ),
             (
-                "Assignment rule: your form builds one row with the 17 training features (hobby flags, society hours, "
-                "comfort, silo index). That row is scaled with output/model/scaler.pkl and passed to output/model/kmeans.pkl; "
-                "predict returns exactly one integer: the tribe ID you see above."
+                "The form turns your hobbies, society hours, comfort score, and friendship-pattern sliders into one profile; "
+                "that profile is compared to the saved survey-based tribes, and you are placed in the closest match."
             ),
             (
-                "Faculty, year, and society chips are stored under submitted in the API response for your write-up, "
-                "but they are not multiplied into those 17 numbers unless you change the notebook, retrain, and export new pickles."
+                "Faculty, year, and society names you typed are kept with your answers for your own records, "
+                "but they do not change the tribe number unless the project is rebuilt with new analysis."
             ),
         ],
     }
@@ -636,8 +637,8 @@ def predict_row(
         "insight_sections": insight_sections,
         "assignment_explain": assignment_explain,
         "result_footer": (
-            "Narrative blocks combine your submitted sliders, the K-Means cluster label, "
-            "and cohort fields from combined_with_clusters.csv—simple rules, not a second model."
+            "The story blocks under your result mix your answers, your tribe label, and simple rules from the survey sample — "
+            "they are not a second automated model."
         ),
         "model_note": "",
     }
@@ -648,6 +649,31 @@ app = Flask(
     static_folder=str(ASSETS),
     static_url_path="/assets",
 )
+
+
+def _dev_cors_origin_allowed(origin: str) -> bool:
+    """Allow browser tools (e.g. Live Preview) on localhost to call the API when not on Vercel."""
+    try:
+        p = urlparse(origin)
+    except ValueError:
+        return False
+    if p.scheme not in ("http", "https"):
+        return False
+    host = (p.hostname or "").lower()
+    return host in ("localhost", "127.0.0.1", "[::1]")
+
+
+@app.after_request
+def _dev_cors_headers(response):
+    if os.environ.get("VERCEL", ""):
+        return response
+    origin = request.headers.get("Origin", "")
+    if origin and _dev_cors_origin_allowed(origin):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Admin-Token"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Vary"] = "Origin"
+    return response
 
 
 @app.get("/")
@@ -718,46 +744,50 @@ def api_events_create():
 def api_predict():
     if request.method == "OPTIONS":
         return ("", 204)
-    data = request.get_json(force=True, silent=True) or {}
-    hobbies = data.get("hobbies") or []
-    if not isinstance(hobbies, list):
-        return jsonify({"error": "hobbies must be a list"}), 400
-    hobbies = [str(h) for h in hobbies if str(h) in HOBBIES]
     try:
-        soc = float(data.get("soc_hours", 0))
-        comfort = float(data.get("comfort", 4))
-        sp = float(data.get("same_prov_pct", 50))
-        sf = float(data.get("same_fac_pct", 50))
-        friends = float(data.get("friends", 4))
-    except (TypeError, ValueError):
-        return jsonify({"error": "invalid numeric fields"}), 400
+        data = request.get_json(force=True, silent=True) or {}
+        hobbies = data.get("hobbies") or []
+        if not isinstance(hobbies, list):
+            return jsonify({"error": "hobbies must be a list"}), 400
+        hobbies = [str(h) for h in hobbies if str(h) in HOBBIES]
+        try:
+            soc = float(data.get("soc_hours", 0))
+            comfort = float(data.get("comfort", 4))
+            sp = float(data.get("same_prov_pct", 50))
+            sf = float(data.get("same_fac_pct", 50))
+            friends = float(data.get("friends", 4))
+        except (TypeError, ValueError):
+            return jsonify({"error": "invalid numeric fields"}), 400
 
-    soc_member_raw = data.get("soc_member", True)
-    if isinstance(soc_member_raw, str):
-        soc_member = soc_member_raw.strip().lower() in ("yes", "true", "1", "y", "member")
-    else:
-        soc_member = bool(soc_member_raw)
-    if not soc_member:
-        soc = 0.0
+        soc_member_raw = data.get("soc_member", True)
+        if isinstance(soc_member_raw, str):
+            soc_member = soc_member_raw.strip().lower() in ("yes", "true", "1", "y", "member")
+        else:
+            soc_member = bool(soc_member_raw)
+        if not soc_member:
+            soc = 0.0
 
-    soc = max(0.0, min(soc, 20.0))
-    comfort = max(1.0, min(comfort, 5.0))
-    sp = max(0.0, min(sp, 100.0))
-    sf = max(0.0, min(sf, 100.0))
-    friends = max(0.5, min(friends, 20.0))
+        soc = max(0.0, min(soc, 20.0))
+        comfort = max(1.0, min(comfort, 5.0))
+        sp = max(0.0, min(sp, 100.0))
+        sf = max(0.0, min(sf, 100.0))
+        friends = max(0.5, min(friends, 20.0))
 
-    if not hobbies:
-        return jsonify({"error": "Pick at least one hobby."}), 400
+        if not hobbies:
+            return jsonify({"error": "Pick at least one hobby."}), 400
 
-    societies_in = str(data.get("societies") or "").strip()[:500]
-    out = predict_row(hobbies, soc, comfort, sp, sf, friends, societies_in, soc_member)
-    out["submitted"] = {
-        "faculty": str(data.get("faculty") or "").strip()[:120],
-        "year": str(data.get("year") or "").strip()[:80],
-        "soc_member": soc_member,
-        "societies": societies_in,
-    }
-    return jsonify(out)
+        societies_in = str(data.get("societies") or "").strip()[:500]
+        out = predict_row(hobbies, soc, comfort, sp, sf, friends, societies_in, soc_member)
+        out["submitted"] = {
+            "faculty": str(data.get("faculty") or "").strip()[:120],
+            "year": str(data.get("year") or "").strip()[:80],
+            "soc_member": soc_member,
+            "societies": societies_in,
+        }
+        return jsonify(out)
+    except Exception as e:
+        # Always JSON so the browser can parse errors (HTML 500 breaks fetch().json()).
+        return jsonify({"error": f"{type(e).__name__}: {e}"}), 500
 
 
 def _pick_port(start: int = 8765, attempts: int = 25) -> int:

@@ -20,7 +20,7 @@
 
 Event and peer suggestions are **on top of** that prediction (rules + CSV), not a replacement for the model.
 
-`GET /api/meta` returns cohort size, **K**, feature count, PCA % (for the 2D chart), plus faculty/year dropdown options from `combined_with_clusters.csv`.
+`GET /api/meta` returns cohort size, tribe count, plus faculty/year dropdown options from `combined_with_clusters.csv`.
 
 ## Run locally
 

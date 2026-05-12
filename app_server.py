@@ -696,6 +696,28 @@ def _dev_cors_headers(response):
     return response
 
 
+class _VercelFunctionPathFix:
+    """Vercel rewrites all traffic to the serverless entry at /api/index; PATH_INFO can stay
+    prefixed with /api/index so Flask would 404 on /. Strip that prefix only on Vercel."""
+
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        if os.environ.get("VERCEL", ""):
+            path = environ.get("PATH_INFO") or "/"
+            marker = "/api/index"
+            if path == marker or path.startswith(marker + "/"):
+                fixed = environ.copy()
+                tail = path[len(marker) :] if len(path) > len(marker) else ""
+                fixed["PATH_INFO"] = tail if tail else "/"
+                return self.wsgi_app(fixed, start_response)
+        return self.wsgi_app(environ, start_response)
+
+
+app.wsgi_app = _VercelFunctionPathFix(app.wsgi_app)
+
+
 @app.get("/")
 def index():
     return send_from_directory(str(PUBLIC), "index.html")

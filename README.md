@@ -63,6 +63,8 @@ Production routing follows [Vercel’s Flask 3 example](https://github.com/verce
 
 Static UI lives under **`public/`** (`index.html` + `assets/`), per [Vercel’s Flask static guidance](https://vercel.com/docs/frameworks/backend/flask). The API stays on the same domain (`/api/...`).
 
+**404 on the live URL:** Vercel can invoke the function with `PATH_INFO` set to `/api/index` instead of `/`. The app strips that prefix when the **`VERCEL`** environment variable is present so `/`, `/api/predict`, etc. route correctly.
+
 **Note:** Admin-posted events on Vercel are written under **`/tmp`** (ephemeral per serverless instance). For a real campus rollout, use a database or Vercel KV / Postgres. Cold starts load **scikit-learn** + pickles — first request can take several seconds.
 
 ## Push

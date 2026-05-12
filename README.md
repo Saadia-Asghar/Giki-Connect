@@ -55,17 +55,16 @@ If you only changed how **K-Means features** are defined but already have `outpu
 ## Deploy on Vercel
 
 1. Import repo **Saadia-Asghar/Giki-Connect**, branch **main**.  
-2. **Framework Preset:** choose **Flask** (or “Other” if Flask is not listed).  
-3. **Root Directory:** `./`  
-4. **Environment variables (optional):** `GIKI_ADMIN_TOKEN` = your secret (otherwise default demo token is used).
+2. **Framework preset:** **Flask** (or leave auto-detect).  
+3. **Root directory:** `.` (repo root). Leave **Output Directory** empty unless you know you need it — setting it to `public` will break the Python app.  
+4. **Python:** 3.11 or newer on the project (matches `pyproject.toml` / `requirements.txt`).  
+5. **Environment variables (optional):** `GIKI_ADMIN_TOKEN` = your secret (otherwise the default demo token is used).
 
-Production routing follows [Vercel’s Flask 3 example](https://github.com/vercel/examples/tree/main/python/flask3): **`vercel.json`** rewrites every path to **`/api/index`**, and **`api/index.py`** exposes the Flask instance **`app`** (`from app_server import app`). Root **`app.py`** is kept as a thin re-export for tools that look for it; the live deployment uses **`api/index.py`**.
+Deployment follows Vercel’s **zero-config Flask** model: root **`app.py`** exposes the Flask instance `app` (`from app_server import app`). There is **no** `vercel.json` rewrite and **no** `api/index.py` — those patterns were causing **404** on production and preview URLs because routing never reached Flask’s `/` handler reliably.
 
-Static UI lives under **`public/`** (`index.html` + `assets/`), per [Vercel’s Flask static guidance](https://vercel.com/docs/frameworks/backend/flask). The API stays on the same domain (`/api/...`).
+**Static files:** keep **`public/`** at the repo root. Vercel serves those assets from the edge; **`GET /`** is still handled by Flask so the same `index.html` loads with consistent behaviour locally and in the cloud.
 
-**404 on the live URL:** Vercel can invoke the function with `PATH_INFO` set to `/api/index` instead of `/`. The app strips that prefix when the **`VERCEL`** environment variable is present so `/`, `/api/predict`, etc. route correctly.
-
-**Note:** Admin-posted events on Vercel are written under **`/tmp`** (ephemeral per serverless instance). For a real campus rollout, use a database or Vercel KV / Postgres. Cold starts load **scikit-learn** + pickles — first request can take several seconds.
+**Note:** Admin-posted events on Vercel are written under **`/tmp`** (ephemeral per serverless instance). For a real campus rollout, use a database or Vercel KV / Postgres. Cold starts load **scikit-learn** + pickles — the first request can take several seconds.
 
 ## Push
 

@@ -20,8 +20,6 @@ import uuid
 import webbrowser
 from pathlib import Path
 
-import joblib
-import numpy as np
 from flask import Flask, jsonify, request, send_from_directory
 
 ROOT = Path(__file__).resolve().parent
@@ -411,12 +409,13 @@ def _polish_tribe_display_fields(prof: dict) -> None:
 
 
 def load_artifacts():
-    global km_model, scaler, feature_cols, cluster_profiles
-    km_model = joblib.load(MODEL_DIR / "kmeans.pkl")
-    scaler = joblib.load(MODEL_DIR / "scaler.pkl")
-    feature_cols = joblib.load(MODEL_DIR / "feature_cols.pkl")
-    with open(MODEL_DIR / "cluster_profiles.json", encoding="utf-8") as f:
-        cluster_profiles = json.load(f)
+    global km_model_data, feature_cols, cluster_profiles
+    with open(PUBLIC / "model_data.json", encoding="utf-8") as f:
+        km_model_data = json.load(f)
+    
+    feature_cols = km_model_data["feature_cols"]
+    cluster_profiles = km_model_data["cluster_profiles"]
+    
     for prof in cluster_profiles.values():
         if isinstance(prof, dict):
             _polish_tribe_display_fields(prof)
@@ -581,9 +580,17 @@ def predict_row(
     silo = silo_index_from_report(friends, same_prov_pct, same_fac_pct)
     row["Silo_Index"] = silo
 
-    X_new = np.array([[row[c] for c in feature_cols]])
-    X_sc = scaler.transform(X_new)
-    cluster = int(km_model.predict(X_sc)[0])
+    vec = [float(row.get(c, 0.0)) for c in feature_cols]
+    for i in range(len(vec)):
+        vec[i] = (vec[i] - km_model_data["scaler_mean"][i]) / km_model_data["scaler_scale"][i]
+
+    best_dist = float("inf")
+    cluster = 0
+    for idx, center in enumerate(km_model_data["cluster_centers"]):
+        dist = sum((center[i] - vec[i]) ** 2 for i in range(len(vec)))
+        if dist < best_dist:
+            best_dist = dist
+            cluster = idx
     if silo < 0.25:
         silo_lbl = "Low (diverse)"
     elif silo < 0.5:
@@ -831,9 +838,9 @@ def _pick_port(start: int = 8765, attempts: int = 25) -> int:
 
 
 def main():
-    if not (MODEL_DIR / "kmeans.pkl").exists():
+    if not (PUBLIC / "model_data.json").exists():
         raise SystemExit(
-            f"Missing model files under {MODEL_DIR}. Run GIKI_Connect_Notebook.ipynb first."
+            f"Missing model_data.json. Run export scripts first."
         )
     load_artifacts()
     load_cohort()
@@ -862,7 +869,7 @@ def main():
 
 def _bootstrap_model():
     """Load pickles when the module is imported (needed for Vercel — no main() run)."""
-    if (MODEL_DIR / "kmeans.pkl").is_file():
+    if (PUBLIC / "model_data.json").is_file():
         load_artifacts()
         load_cohort()
 
